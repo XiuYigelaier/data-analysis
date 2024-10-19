@@ -1,8 +1,8 @@
 package com.example.dataanalysissecurity.config;
 
+import com.example.core.entity.User;
+import com.example.core.repository.UserRepository;
 import com.example.dataanalysissecurity.pojo.entity.LoginUser;
-import com.example.dataanalysissecurity.pojo.entity.User;
-import com.example.dataanalysissecurity.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

@@ -1,5 +1,6 @@
 package com.example.dataanalysissecurity.pojo.entity;
 
+import com.example.core.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
