@@ -1,0 +1,26 @@
+server:
+  port: 9003
+spring:
+  application:
+    name: data-analysis-gateway
+  #  profiles:
+  #    active: test
+
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: data-analysis-config  # 指定Config服务端在服务发现中的serviceId
+      fail-fast: true
+      uri: http://localhost:8762
+      # 指定config server在服务发现中的serviceId，默认为：configserver
+      name: config
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8762/eureka/

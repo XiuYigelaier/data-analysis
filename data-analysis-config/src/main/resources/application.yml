@@ -1,0 +1,45 @@
+server:
+  port: 8002
+  tomcat:
+    accept-count: 1000
+    max-threads: 1000
+    max-connections: 2000
+spring:
+  application:
+    name: data-analysis-config
+    admin:
+      enabled: true
+  cloud:
+    config:
+      enabled: true
+      server:
+        native:
+          search-locations: file:D:/javaProject/comp/config/analysis-config
+    discovery:
+      client:
+        health-indicator:
+          enabled: false
+debug: true
+endpoints:
+  enabled: false
+management:
+  security:
+    enabled: false
+  health:
+    defaults:
+      enabled: false
+  info:
+    defaults:
+      enabled: false
+---
+spring:
+  profiles:
+    active: native
+eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
+  client:
+    service-url:
+      defaultZone: http://localhost:8762/eureka/
+

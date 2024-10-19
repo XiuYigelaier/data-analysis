@@ -1,0 +1,21 @@
+server:
+  port: 8762
+spring:
+  application:
+    name: data-analysis-eureka
+eureka:
+  server:
+    enable-self-preservation: false
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    registry-fetch-interval-seconds: 10
+    instance-info-replication-interval-seconds: 30
+    eureka-connection-idle-timeout-seconds: 45
+    eureka-service-url-poll-interval-seconds: 10
+  instance:
+    hostname: localhost
+endpoints:
+  shutdown:
+    enabled: false
+    sensitive: false
