@@ -185,6 +185,7 @@ public class BaseEntity implements Serializable {
 
         if (StringUtils.isEmpty(this.createdUser)) {
             this.createdUser = this.convertCurrentOperatorName();
+            this.lastModifiedUser = this.convertCurrentOperatorName();
         }
 
     }

@@ -85,12 +85,12 @@ public class JWTAuthenticationTokenFilter  implements GlobalFilter, Ordered {
             Claims claim = JWTUtils.parseJWT(token);
             userId = claim.getSubject();
         } catch (Exception e) {
-            throw new RuntimeException("令牌异常", e);
+            return buildReturnMono("jwt令牌异常",exchange);
         }
         String redisKey = "login:"+userId;
         LoginUser user = (LoginUser) redisUtil.get(redisKey);
         if(ObjectUtils.isEmpty(user)){
-            throw  new RuntimeException("redis无数据:"+redisKey);
+            return buildReturnMono("redis无对应数据",exchange);
 
         }
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user,null,null);
@@ -116,7 +116,7 @@ public class JWTAuthenticationTokenFilter  implements GlobalFilter, Ordered {
 
     private Mono<Void> buildReturnMono(String error, ServerWebExchange exchange) {
         ServerHttpResponse response = exchange.getResponse();
-        String jsonString = JSON.toJSONString( ResponseModel.failure("验证失败"));
+        String jsonString = JSON.toJSONString( ResponseModel.failure("验证失败:"+error));
         byte[] bits = jsonString.getBytes(StandardCharsets.UTF_8);
         DataBuffer buffer = response.bufferFactory().wrap(bits);
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
