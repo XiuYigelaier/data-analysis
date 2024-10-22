@@ -1,7 +1,7 @@
 package com.analysis.dataanalysisgateway.filter;
 
 import com.alibaba.fastjson.JSON;
-import com.example.auth.entity.LoginUser;
+import com.example.core.entity.LoginUser;
 import com.example.core.entity.ResponseModel;
 import com.example.core.entity.User;
 import com.example.core.utils.JWTUtils;
@@ -15,20 +15,15 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -39,8 +34,9 @@ import java.util.Set;
 @Component
 public class JWTAuthenticationTokenFilter  implements GlobalFilter, Ordered {
 
-    @Autowired
-    final private RedisUtil redisUtil;
+
+     private RedisUtil redisUtil;
+
 
 
     private static List<String> whitelist = null;
@@ -92,13 +88,15 @@ public class JWTAuthenticationTokenFilter  implements GlobalFilter, Ordered {
             throw new RuntimeException("令牌异常", e);
         }
         String redisKey = "login:"+userId;
-        User user = (User) redisUtil.get(redisKey);
+        LoginUser user = (LoginUser) redisUtil.get(redisKey);
         if(ObjectUtils.isEmpty(user)){
             throw  new RuntimeException("redis无数据:"+redisKey);
 
         }
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user,null,null);
         SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        SecurityContext ctx = SecurityContextHolder.getContext();
+
         return chain.filter(exchange);
         //判断是否是有效的token
 

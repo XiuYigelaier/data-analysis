@@ -1,29 +1,28 @@
 package com.example.core.entity;
 
 
-
 import com.example.core.utils.DateUtil;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Date;
 
 
 @MappedSuperclass
 @EntityListeners({AuditingEntityListener.class})
-public  class BaseEntity implements Serializable {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class BaseEntity implements Serializable {
     @Id
     @GenericGenerator(name = "snowFlakeIdGenerator", strategy = "com.example.core.utils.SnowFlakeIdGenerator")
     @GeneratedValue(generator = "snowFlakeIdGenerator")
-    @Column(name = "id", length=18)
+    @Column(name = "id", length = 18)
     private String id;
 
     @Column(
@@ -64,26 +63,7 @@ public  class BaseEntity implements Serializable {
             columnDefinition = "varchar(36) COMMENT '创建者'"
     )
     protected String createdUser;
-    @Column(
-            name = "CreatedUserName",
-            updatable = false,
-            columnDefinition = "varchar(50) COMMENT '创建者姓名'"
-    )
-    protected String createdUserName;
 
-    @JsonFormat(
-            pattern = "yyyy-MM-dd HH:mm:ss"
-    )
-    @DateTimeFormat(
-            pattern = "yyyy-MM-dd HH:mm:ss"
-    )
-    @CreatedDate
-    @Column(
-            name = "CreatedTime",
-            updatable = false,
-            columnDefinition = "datetime COMMENT '创建时间'"
-    )
-    protected Date createdTime;
 
     @Column(
             name = "CreatedDate",
@@ -98,24 +78,7 @@ public  class BaseEntity implements Serializable {
             columnDefinition = "varchar(36) COMMENT '最后修改者'"
     )
     protected String lastModifiedUser;
-    @Column(
-            name = "lastModifiedUserName",
-            columnDefinition = "varchar(50) COMMENT '最后修改者姓名'"
-    )
-    protected String lastModifiedUserName;
 
-    @JsonFormat(
-            pattern = "yyyy-MM-dd HH:mm:ss"
-    )
-    @DateTimeFormat(
-            pattern = "yyyy-MM-dd HH:mm:ss"
-    )
-    @LastModifiedDate
-    @Column(
-            name = "LastModifiedTime",
-            columnDefinition = "datetime COMMENT '最后更新时间'"
-    )
-    protected Date lastModifiedTime;
 
     @Column(
             name = "LastModifiedDate",
@@ -182,13 +145,6 @@ public  class BaseEntity implements Serializable {
         this.createdUser = createdUser;
     }
 
-    public Date getCreatedTime() {
-        return this.createdTime;
-    }
-
-    public void setCreatedTime(Date createdTime) {
-        this.createdTime = createdTime;
-    }
 
     public String getCreatedDate() {
         return this.createdDate;
@@ -206,13 +162,6 @@ public  class BaseEntity implements Serializable {
         this.lastModifiedUser = lastModifiedUser;
     }
 
-    public Date getLastModifiedTime() {
-        return this.lastModifiedTime;
-    }
-
-    public void setLastModifiedTime(Date lastModifiedTime) {
-        this.lastModifiedTime = lastModifiedTime;
-    }
 
     public String getLastModifiedDate() {
         return this.lastModifiedDate;
@@ -222,21 +171,6 @@ public  class BaseEntity implements Serializable {
         this.lastModifiedDate = lastModifiedDate;
     }
 
-    public String getCreatedUserName() {
-        return this.createdUserName;
-    }
-
-    public void setCreatedUserName(String createdUserName) {
-        this.createdUserName = createdUserName;
-    }
-
-    public String getLastModifiedUserName() {
-        return this.lastModifiedUserName;
-    }
-
-    public void setLastModifiedUserName(String lastModifiedUserName) {
-        this.lastModifiedUserName = lastModifiedUserName;
-    }
 
     @PrePersist
     public void initPropertyValue() {
@@ -248,7 +182,13 @@ public  class BaseEntity implements Serializable {
         if (null == this.getValid()) {
             this.setValid(true);
         }
+
+        if (StringUtils.isEmpty(this.createdUser)) {
+            this.createdUser = this.convertCurrentOperatorName();
+        }
+
     }
+
     public static boolean isNull(Object str) {
         return str == null || "null".equalsIgnoreCase(str.toString()) || "".equals(str) || "".equals(str.toString().trim());
     }
@@ -259,5 +199,25 @@ public  class BaseEntity implements Serializable {
         if (null == this.getValid()) {
             this.setValid(true);
         }
+        if (!StringUtils.hasText(lastModifiedUser) || !lastModifiedUser.equals(this.convertCurrentOperatorName())) {
+            lastModifiedUser = this.convertCurrentOperatorName();
+        }
+
+
+    }
+
+    private Object getPrincipal() {
+        SecurityContext ctx = SecurityContextHolder.getContext();
+        return ctx != null && ctx.getAuthentication() != null && ctx.getAuthentication().getPrincipal() != null ? ctx.getAuthentication().getPrincipal() : null;
+    }
+
+    public LoginUser convertCurrentOperator() {
+        Object principal = this.getPrincipal();
+        return principal instanceof LoginUser ? (LoginUser) principal : null;
+    }
+
+    public String convertCurrentOperatorName() {
+        LoginUser operator = this.convertCurrentOperator();
+        return operator == null ? null : operator.getUser().getUserName();
     }
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @SpringBootApplication
 @EnableJpaRepositories(basePackages = {"com.example.core.repository"})
-@EntityScan(basePackages = {"com.example.core.entity","com.example.auth.entity","com.example.auth.*"})
+@EntityScan(basePackages = {"com.example.core.entity",})
 @ComponentScan({"com.analysis.dataanalysisgateway","com.example.*"})
 public class DataAnalysisGatewayApplication {
 

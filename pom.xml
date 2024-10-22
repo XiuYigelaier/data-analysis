@@ -20,7 +20,7 @@
         <module>data-analysis-eureka</module>
         <module>data-analysis-config</module>
         <module>data-analysis-gateway</module>
-        <module>data-analysis-security</module>
+        <module>data-analysis-auth</module>
     </modules>
     <dependencies>
         <dependency>
