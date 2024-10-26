@@ -2,6 +2,9 @@
 server:
   port: 9001
 
+git:
+  token: Bearer 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
+
 spring:
   application:
     name: data-analysis-service
