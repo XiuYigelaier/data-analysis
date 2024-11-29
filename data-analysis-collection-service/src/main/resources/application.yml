@@ -1,0 +1,29 @@
+
+server:
+  port: 9001
+
+git:
+  token: Bearer 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
+  url: https://api.github.com/graphql
+spring:
+  application:
+    name: data-analysis-collection-service
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: data-analysis-config  # 指定Config服务端在服务发现中的serviceId
+      fail-fast: true
+      uri: http://localhost:8762
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8762/eureka/
+debug: true
+logging:
+  level:
+    org:
+      springframework:
+        cloud:
+          config=DEBUG:

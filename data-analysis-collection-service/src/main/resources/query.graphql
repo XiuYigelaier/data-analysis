@@ -1,0 +1,91 @@
+{
+  user(login: "yyx990803") {
+
+    id # 这是 GraphQL 中的全局唯一 ID，不是数字形用户 ID
+    avatarUrl
+    location
+    bio
+    #贡献集合
+    contributionsCollection{
+        #隐藏仓库也有贡献
+        hasAnyRestrictedContributions
+        pullRequestReviewContributionsByRepository{
+                repository{
+                   primaryLanguage{
+                    name
+                   }
+                    name
+                    url
+                }
+                contributions{
+                    totalCount
+                }
+        }
+
+        # pullRequestContributionsByRepository{
+        #     repository{
+        #         name
+        #         url
+        #     }
+        # }
+        #提交
+        issueContributionsByRepository{
+            repository{
+                primaryLanguage{
+                    name
+                }
+
+                name
+                url
+            }
+            contributions{
+                totalCount
+            }
+        }
+        commitContributionsByRepository{
+            #提交仓库
+           repository{
+            primaryLanguage{
+                name
+            }
+            name
+            url
+           }
+
+           contributions{
+             totalCount
+           }
+
+        }
+        totalCommitContributions
+        totalIssueContributions
+        totalPullRequestContributions
+        totalRepositoriesWithContributedCommits
+
+
+    }
+    repositories{
+
+      totalCount # 这是用来获取仓库总数的字段
+    }
+    followers { # followers 是一个 Connection 类型，需要指定获取的数量，或者使用 all 来获取所有（但可能受速率限制影响）
+      totalCount # 用来获取关注者总数的字段
+    }
+    gists{
+       totalCount
+    }
+    isBountyHunter
+    # 此用户是否是 GitHub 安全漏洞赏金计划的参与者
+    isCampusExpert
+    # isCampusExpert
+    isDeveloperProgramMember
+    #此用户是否是 GitHub 开发者计划的成员。
+    issueComments{
+        totalCount
+    }
+
+
+
+  }
+
+}
