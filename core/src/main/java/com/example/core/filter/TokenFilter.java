@@ -58,6 +58,7 @@ public class TokenFilter implements Filter {
 
                 }
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user, null, null);
+                usernamePasswordAuthenticationToken.setDetails(authHeader);
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                 SecurityContext ctx = SecurityContextHolder.getContext();
             }

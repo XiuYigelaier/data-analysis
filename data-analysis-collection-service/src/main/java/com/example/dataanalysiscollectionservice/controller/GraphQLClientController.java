@@ -1,8 +1,7 @@
 package com.example.dataanalysiscollectionservice.controller;
 
 import com.example.core.entity.ResponseModel;
-import com.example.dataanalysiscollectionservice.service.GitHubInfoService;
-import com.example.dataanalysiscollectionservice.service.impl.GraphQLClient;
+import com.example.dataanalysiscollectionservice.service.impl.GraphQLSearchServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,16 +13,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class GraphQLClientController {
 
     @Autowired
-    GraphQLClient graphQLClient;
+    GraphQLSearchServiceImpl graphQLSearchServiceImpl;
 
     //获取用户所有仓库列表
     @GetMapping("/projectUser")
-    public ResponseModel<?> getRepos(@RequestParam String projectUser) {
+    public ResponseModel<?> graphqlSearch(@RequestParam String developerName) {
         try {
-            graphQLClient.graphqlSearch(projectUser);
-            return ResponseModel.success("成功");
+            return ResponseModel.success(graphQLSearchServiceImpl.graphqlSearch(developerName));
         } catch (Exception e) {
-            return ResponseModel.failure("获取失败" + e);
+            return ResponseModel.failure("获取失败" +  e.getMessage());
         }
     }
 

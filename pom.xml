@@ -21,6 +21,8 @@
         <module>data-analysis-config</module>
         <module>data-analysis-gateway</module>
         <module>data-analysis-auth</module>
+        <module>data-analysis-calculate-service</module>
+        <module>data-analysis-api-service</module>
     </modules>
     <dependencies>
         <dependency>

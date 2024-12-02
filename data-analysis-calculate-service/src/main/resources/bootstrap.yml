@@ -1,8 +1,8 @@
 server:
-  port: 9001
+  port: 9000
 spring:
   application:
-    name: data-analysis-collection-service
+    name: data-analysis-calculate-service
   #  profiles:
   #    active: test
 
@@ -15,6 +15,16 @@ spring:
       uri: http://localhost:8762
       # 指定config server在服务发现中的serviceId，默认为：configserver
       name: config
+xf:
+  config:
+    hostUrl: https://spark-api.xf-yun.com/v3.1/chat
+    appId: 03a6352e
+    apiSecret: ZWUzMTBlNGZmMjRiY2NjNTQxMmU4Mjk5
+    apiKey: 8677832a85ddc0dd8f8177eddd15c1ad
+    maxResponseTime: 30
+    domain: generalv3
+
+
 
 ---
 spring:
