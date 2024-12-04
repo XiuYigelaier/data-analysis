@@ -15,6 +15,15 @@ spring:
         service-id: data-analysis-config  # 指定Config服务端在服务发现中的serviceId
       fail-fast: true
       uri: http://localhost:8762
+xxl:
+  job:
+    admin:
+      addresses: http://127.0.0.1:8080/xxl-job-admin
+      accessToken: default_token
+    executor:
+      appname: job-demo
+      logpath: E:\\xxl-job-2.4.0\\xxl-job-2.4.0\\log
+      logretentiondays: 30
 
 eureka:
   client:

@@ -10,6 +10,8 @@ import javax.persistence.Entity;
 public class Developer extends BaseEntity {
     @Column(name = "name")
     String name;
+    @Column(name = "login")
+    String login;
     @Column(name = "git_id")
     String gitId;
     @Column(name = "avatar_url")

@@ -10,10 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -71,6 +76,24 @@ public class RedisUtil {
         SetOperations<String, Object> set = this.redisTemplate.opsForSet();
         set.add(key, new Object[]{value});
     }
+
+    public void addZSet(String key, Object val, Double rank){
+        redisTemplate.opsForZSet().add(key,val,rank);
+    }
+
+    public <T> List<T> getZSet(String key){
+          Set<ZSetOperations.TypedTuple<T>> sortedSet =  redisTemplate.opsForZSet().reverseRangeByScore(key,0,-1);
+          List<T>  ans = new ArrayList<>();
+          for(ZSetOperations.TypedTuple<T> tuple: sortedSet){
+              ans.add(tuple.getValue());
+          }
+          return  ans;
+    }
+
+
+
+
+
 
 
 }

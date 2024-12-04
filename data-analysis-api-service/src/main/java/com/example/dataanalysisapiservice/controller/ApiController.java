@@ -14,13 +14,22 @@ public class ApiController {
     @Autowired
     ApiService apiService;
 
-    @GetMapping("/projectUser")
-    public ResponseModel<?> calculateRank(@RequestParam String projectUser) {
+    @GetMapping("/search")
+    public ResponseModel<?> calculateRank(@RequestParam String login) {
         try {
-            apiService.calculateRank(projectUser);
+            apiService.calculateRank(login);
             return ResponseModel.success("成功");
         } catch (Exception e) {
             return ResponseModel.failure("计算失败" +  e.getMessage());
+        }
+    }
+
+    @GetMapping("/findAll")
+    public ResponseModel<?> findAll(){
+        try{
+            return ResponseModel.success(apiService.findAll());
+        } catch (Exception e){
+            return ResponseModel.failure("获取失败" +  e.getMessage());
         }
     }
 }

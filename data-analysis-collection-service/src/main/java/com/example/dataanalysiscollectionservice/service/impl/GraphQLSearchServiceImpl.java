@@ -7,7 +7,11 @@ import com.example.core.service.AsyncSave;
 import com.example.core.service.GraphQLSearchService;
 
 
-
+import com.xxl.job.core.handler.annotation.XxlJob;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.mountcloud.graphql.GraphqlClient;
 import org.mountcloud.graphql.request.query.DefaultGraphqlQuery;
 import org.mountcloud.graphql.request.query.GraphqlQuery;
@@ -19,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -30,8 +35,15 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
     String GIT_TOKEN;
     @Value("${git.url}")
     String GIT_URL;
-    String FILE_PATH = "D:\\javaProject1\\DataAnalysis\\data-analysis-collection-service\\src\\main\\resources\\query.graphql";
+    @Value("1000")
+    String GITHUB_SEARCH_FOLLOWERS_MIN;
+    @Value("50")
+    String GITHUB_SEARCH_PER_PAGE;
+    private static final String GITHUB_SEARCH_USERS_URL = "https://api.github.com/search/users";
 
+    private static final String FILE_PATH = "D:\\javaProject1\\DataAnalysis\\data-analysis-collection-service\\src\\main\\resources\\query.graphql";
+
+    private static final OkHttpClient client = new OkHttpClient();
     @Autowired
     AsyncSave asyncSave;
     @Autowired
@@ -50,7 +62,7 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
         graphqlClient.setHttpHeaders(httpHeaders);
         GraphqlQuery query = new DefaultGraphqlQuery("user");
         query.addParameter("login", developerName);
-        query.addResultAttributes("id", "avatarUrl", "location", "bio", "isBountyHunter", "isCampusExpert", "isDeveloperProgramMember","company","pronouns");
+        query.addResultAttributes("id", "name", "avatarUrl", "location", "bio", "isBountyHunter", "isCampusExpert", "isDeveloperProgramMember", "company", "pronouns");
         ResultAttributtes contributionsCollection = new ResultAttributtes("contributionsCollection");
         contributionsCollection.addResultAttributes("hasAnyRestrictedContributions", "totalCommitContributions", "totalIssueContributions", "totalPullRequestContributions", "totalRepositoriesWithContributedCommits");
         ResultAttributtes pullRequestReviewContributionsByRepository = new ResultAttributtes("pullRequestReviewContributionsByRepository");
@@ -106,145 +118,49 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
         try {
             GraphqlResponse response = graphqlClient.doQuery(query);
             result = response.getData();
+
         } catch (IOException e) {
             throw new RuntimeException("git请求失败:" + result.get("errors"));
         }
+        if(ObjectUtils.isEmpty(result)){
+            throw new  RuntimeException("无result：网络错误");
+        }
+        if(ObjectUtils.isEmpty(result.get("user"))){
+            //无法访问这个用户
+            return  null;
+        }
 
-
-
-//        Developer developer = new Developer();
-//        developer.setName(developerName);
-//
-//        Map data = (Map) result.get("data");
-//        Map user = (Map) data.get("user");
-//        if (ObjectUtils.isEmpty(data.get("user"))) {
-//            throw new RuntimeException("无此用户信息" + result.get("errors"));
-//        }
-//        ;
-//        if (developerRepository.findByGitIdAndDeletedFalse((String) user.get("id")).isPresent()) {
-//            developer = developerRepository.findByGitIdAndDeletedFalse((String) user.get("id")).get();
-//        }
-//        developer.setBlo((String) user.get("bio"));
-//        developer.setAvatarUrl((String) user.get("avatarUrl"));
-//        developer.setGitId((String) user.get("id"));
-//        developer.setDeveloperProgramMemberFlag((Boolean) user.get("isDeveloperProgramMember"));
-//        developer.setBountyHunterFlag((Boolean) user.get("isBountyHunter"));
-//        developer.setCampusExpertFlag((Boolean) user.get("isCampusExpert"));
-//        Map followerMap = (Map) user.get("followers");
-//        developer.setFollowersCount((Integer) followerMap.get("totalCount"));
-//        Map gistMap = (Map) user.get("gists");
-//        developer.setPublicGistsCount((Integer) gistMap.get("totalCount"));
-//        LinkedHashMap repositoriesList = (LinkedHashMap) user.get("repositories");
-//        developer.setPublicReposCount((Integer) repositoriesList.get("totalCount"));
-//        String developerId = developerRepository.save(developer).getId();
-//
-//        //删除关联表
-//        if (developerAndProjectRelationShipRepository.findAllByDeveloperIdAndDeletedFalse(developerId).isPresent()) {
-//            developerAndProjectRelationShipRepository.deleteAllByDeveloperIdAndDeletedFalse(developerId);
-//        }
-//        LinkedHashMap contributionsCollectionMap = (LinkedHashMap) user.get("contributionsCollection");
-//        ArrayList<LinkedHashMap> pullRequestReviewContributionsByRepositoryList = (ArrayList<LinkedHashMap>) contributionsCollectionMap.get("pullRequestReviewContributionsByRepository");
-//        ArrayList<LinkedHashMap> issueContributionsByRepositoryList = (ArrayList<LinkedHashMap>) contributionsCollectionMap.get("issueContributionsByRepository");
-//        ArrayList<LinkedHashMap> commitContributionsByRepositoryList = (ArrayList<LinkedHashMap>) contributionsCollectionMap.get("commitContributionsByRepository");
-//
-//        pullRequestReviewContributionsByRepositoryList.forEach(
-//                pullRep -> {
-//                    LinkedHashMap rep = (LinkedHashMap) pullRep.get("repository");
-//                    Project project = new Project();
-//                    Optional<Project> projectOpt = projectRepository.findByGitIdAndDeletedFalse((String) rep.get("id"));
-//                    if (projectOpt.isPresent()) {
-//                        project = projectOpt.get();
-//                    }
-//                    project.setGitId((String) rep.get("id"));
-//                    project.setUrl((String) rep.get("url"));
-//                    project.setName((String) rep.get("name"));
-//                    project.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
-//                    project.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
-//                    project.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
-//                    project.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
-//                    project.setStargazersCount((Integer) rep.get("stargazerCount"));
-//                    String projectId = projectRepository.save(project).getId();
-//                    Optional<DeveloperAndProjectRelationShip> developerAndProjectRelationShipOpt = developerAndProjectRelationShipRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
-//                    DeveloperAndProjectRelationShip developerAndProjectRelationShip = new DeveloperAndProjectRelationShip();
-//                    if (developerAndProjectRelationShipOpt.isPresent()) {
-//                        developerAndProjectRelationShip = developerAndProjectRelationShipOpt.get();
-//                    }
-//                    developerAndProjectRelationShip.setDeveloperId(developerId);
-//                    developerAndProjectRelationShip.setProjectId(projectId);
-//                    developerAndProjectRelationShip.setPrimaryLanguage(project.getLanguage());
-//                    developerAndProjectRelationShip.setHasAnyRestrictedContributions((Boolean) contributionsCollectionMap.get("hasAnyRestrictedContributions"));
-//                    developerAndProjectRelationShip.setPullRequestReviewEventCount((Integer) ((Map) pullRep.get("contributions")).get("totalCount"));
-//                    developerAndProjectRelationShipRepository.save(developerAndProjectRelationShip);
-//                }
-//        );
-//
-//        issueContributionsByRepositoryList.forEach(
-//                issueRep -> {
-//                    LinkedHashMap rep = (LinkedHashMap) issueRep.get("repository");
-//                    Project project = new Project();
-//                    Optional<Project> projectOpt = projectRepository.findByGitIdAndDeletedFalse((String) rep.get("id"));
-//                    if (projectOpt.isPresent()) {
-//                        project = projectOpt.get();
-//                    }
-//                    project.setGitId((String) rep.get("id"));
-//                    project.setUrl((String) rep.get("url"));
-//                    project.setName((String) rep.get("name"));
-//                    project.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
-//                    project.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
-//                    project.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
-//                    project.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
-//                    project.setStargazersCount((Integer) rep.get("stargazerCount"));
-//                    String projectId = projectRepository.save(project).getId();
-//                    Optional<DeveloperAndProjectRelationShip> developerAndProjectRelationShipOpt = developerAndProjectRelationShipRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
-//                    DeveloperAndProjectRelationShip developerAndProjectRelationShip = new DeveloperAndProjectRelationShip();
-//                    if (developerAndProjectRelationShipOpt.isPresent()) {
-//                        developerAndProjectRelationShip = developerAndProjectRelationShipOpt.get();
-//                    }
-//                    developerAndProjectRelationShip.setDeveloperId(developerId);
-//                    developerAndProjectRelationShip.setProjectId(projectId);
-//                    developerAndProjectRelationShip.setPrimaryLanguage(project.getLanguage());
-//                    developerAndProjectRelationShip.setHasAnyRestrictedContributions((Boolean) contributionsCollectionMap.get("hasAnyRestrictedContributions"));
-//                    developerAndProjectRelationShip.setIssuesCommentEventCount((Integer) ((Map) issueRep.get("contributions")).get("totalCount"));
-//                    developerAndProjectRelationShipRepository.save(developerAndProjectRelationShip);
-//                }
-//        );
-//
-//        commitContributionsByRepositoryList.forEach(
-//                commitRep -> {
-//                    LinkedHashMap rep = (LinkedHashMap) commitRep.get("repository");
-//                    Project project = new Project();
-//                    Optional<Project> projectOpt = projectRepository.findByGitIdAndDeletedFalse((String) rep.get("id"));
-//                    if (projectOpt.isPresent()) {
-//                        project = projectOpt.get();
-//                    }
-//                    project.setGitId((String) rep.get("id"));
-//                    project.setUrl((String) rep.get("url"));
-//                    project.setName((String) rep.get("name"));
-//                    project.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
-//                    project.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
-//                    project.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
-//                    project.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
-//                    project.setStargazersCount((Integer) rep.get("stargazerCount"));
-//                    String projectId = projectRepository.save(project).getId();
-//                    Optional<DeveloperAndProjectRelationShip> developerAndProjectRelationShipOpt = developerAndProjectRelationShipRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
-//                    DeveloperAndProjectRelationShip developerAndProjectRelationShip = new DeveloperAndProjectRelationShip();
-//                    if (developerAndProjectRelationShipOpt.isPresent()) {
-//                        developerAndProjectRelationShip = developerAndProjectRelationShipOpt.get();
-//                    }
-//                    developerAndProjectRelationShip.setDeveloperId(developerId);
-//                    developerAndProjectRelationShip.setProjectId(projectId);
-//                    developerAndProjectRelationShip.setPrimaryLanguage(project.getLanguage());
-//                    developerAndProjectRelationShip.setHasAnyRestrictedContributions((Boolean) contributionsCollectionMap.get("hasAnyRestrictedContributions"));
-//                    developerAndProjectRelationShip.setCommitCount((Integer) ((Map) commitRep.get("contributions")).get("totalCount"));
-//                    developerAndProjectRelationShipRepository.save(developerAndProjectRelationShip);
-//                }
-//        );
-        asyncSave.save(developerName,result);
-        return  result;
+        asyncSave.save(developerName, result);
+        return result;
 
     }
 
-
+//    @XxlJob("searchDeveloperHandler")
+//    public void scheduledSearchUser() throws IOException {
+//
+//        HttpUrl urlBuilder = HttpUrl.parse(GITHUB_SEARCH_USERS_URL)
+//                .newBuilder()
+//                .addQueryParameter("q", "followers:>" + GITHUB_SEARCH_FOLLOWERS_MIN)
+//                .addQueryParameter("sort", "followers")
+//                .addQueryParameter("order", "desc")
+//                .addQueryParameter("per_page", GITHUB_SEARCH_PER_PAGE)
+//                .build();
+//
+//        Request request = new Request.Builder()
+//                .url(urlBuilder)
+//                .addHeader("Authorization", GIT_TOKEN)
+//                .build();
+//
+//          try (Response response = client.newCall(request).execute()) {
+//            if (response.isSuccessful()) {
+//                // 请求成功，处理响应
+//                System.out.println(response.body().string());
+//            } else {
+//                // 请求失败，处理错误
+//                System.err.println("Request failed: " + response.code());
+//            }
+//        }
+//    }
 
 
 }

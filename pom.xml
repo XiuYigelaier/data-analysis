@@ -25,6 +25,7 @@
         <module>data-analysis-api-service</module>
     </modules>
     <dependencies>
+
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>

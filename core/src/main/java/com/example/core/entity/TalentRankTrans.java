@@ -8,6 +8,7 @@ import java.util.List;
 @Data
 public class TalentRankTrans  {
     String name;
+    String login;
     String gitId;
     String avatarUrl;
     String blo;

@@ -28,19 +28,19 @@ public class AsyncSaveImpl implements AsyncSave {
     @Autowired
     ProjectRepository projectRepository;
     @Async
-    public  void save (String developerName, Map result) {
+    public  void save (String login, Map result) {
         Developer developer = new Developer();
-        developer.setName(developerName);
-
+        developer.setLogin(login);
         Map data = (Map) result.get("data");
         Map user = (Map) data.get("user");
         if (ObjectUtils.isEmpty(data.get("user"))) {
-            throw new RuntimeException("无此用户信息" + result.get("errors"));
+            throw new RuntimeException("无此用户信息"+login + result.get("errors"));
         }
         ;
         if (developerRepository.findByGitIdAndDeletedFalse((String) user.get("id")).isPresent()) {
             developer = developerRepository.findByGitIdAndDeletedFalse((String) user.get("id")).get();
         }
+        developer.setName((String) user.get("name"));
         developer.setBlo((String) user.get("bio"));
         developer.setAvatarUrl((String) user.get("avatarUrl"));
         developer.setGitId((String) user.get("id"));
@@ -75,10 +75,18 @@ public class AsyncSaveImpl implements AsyncSave {
                     project.setGitId((String) rep.get("id"));
                     project.setUrl((String) rep.get("url"));
                     project.setName((String) rep.get("name"));
-                    project.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
-                    project.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
-                    project.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
-                    project.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
+                    if(!ObjectUtils.isEmpty(rep.get("primaryLanguage"))){
+                        project.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
+                    }
+                    if(!ObjectUtils.isEmpty(rep.get("commitComments"))){
+                        project.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
+                    }
+                    if(!ObjectUtils.isEmpty(rep.get("watchers"))){
+                        project.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
+                    }
+                   if(!ObjectUtils.isEmpty(rep.get("issues"))){
+                       project.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
+                   }
                     project.setStargazersCount((Integer) rep.get("stargazerCount"));
                     String projectId = projectRepository.save(project).getId();
                     Optional<DeveloperAndProjectRelationShip> developerAndProjectRelationShipOpt = developerAndProjectRelationShipRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
@@ -106,10 +114,18 @@ public class AsyncSaveImpl implements AsyncSave {
                     project.setGitId((String) rep.get("id"));
                     project.setUrl((String) rep.get("url"));
                     project.setName((String) rep.get("name"));
-                    project.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
-                    project.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
-                    project.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
-                    project.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
+                    if(!ObjectUtils.isEmpty(rep.get("primaryLanguage"))){
+                        project.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
+                    }
+                    if(!ObjectUtils.isEmpty(rep.get("commitComments"))){
+                        project.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
+                    }
+                    if(!ObjectUtils.isEmpty(rep.get("watchers"))){
+                        project.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
+                    }
+                    if(!ObjectUtils.isEmpty(rep.get("issues"))){
+                        project.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
+                    }
                     project.setStargazersCount((Integer) rep.get("stargazerCount"));
                     String projectId = projectRepository.save(project).getId();
                     Optional<DeveloperAndProjectRelationShip> developerAndProjectRelationShipOpt = developerAndProjectRelationShipRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
@@ -137,10 +153,18 @@ public class AsyncSaveImpl implements AsyncSave {
                     project.setGitId((String) rep.get("id"));
                     project.setUrl((String) rep.get("url"));
                     project.setName((String) rep.get("name"));
-                    project.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
-                    project.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
-                    project.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
-                    project.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
+                    if(!ObjectUtils.isEmpty(rep.get("primaryLanguage"))){
+                        project.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
+                    }
+                    if(!ObjectUtils.isEmpty(rep.get("commitComments"))){
+                        project.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
+                    }
+                    if(!ObjectUtils.isEmpty(rep.get("watchers"))){
+                        project.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
+                    }
+                    if(!ObjectUtils.isEmpty(rep.get("issues"))){
+                        project.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
+                    }
                     project.setStargazersCount((Integer) rep.get("stargazerCount"));
                     String projectId = projectRepository.save(project).getId();
                     Optional<DeveloperAndProjectRelationShip> developerAndProjectRelationShipOpt = developerAndProjectRelationShipRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);

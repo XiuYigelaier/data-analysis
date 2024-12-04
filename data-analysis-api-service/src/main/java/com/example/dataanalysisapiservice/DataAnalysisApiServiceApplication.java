@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableJpaRepositories(basePackages = {"com.example.core.repository","com.example.dataanalysisapiservice.*"})
-@EntityScan(basePackages = {"com.example.core.entity","com.example.dataanalysiscollectionservice.*"})
+@EntityScan(basePackages = {"com.example.core.entity","com.example.dataanalysisapiservice.*"})
 @ComponentScan({"com.example.*","com.example.dataanalysisapiservice.*"})
 @EnableAsync
 @EnableTransactionManagement

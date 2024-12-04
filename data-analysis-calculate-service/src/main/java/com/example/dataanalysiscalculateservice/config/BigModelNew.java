@@ -52,13 +52,16 @@ public class BigModelNew extends WebSocketListener {
     public BigModelNew(String userId, Boolean wsCloseFlag) {
         this.userId = userId;
         this.wsCloseFlag = wsCloseFlag;
-        this.future  =new CompletableFuture<>();
 
     }
+
 
     // 主函数
     public CompletableFuture<String> requestModel(String text) throws Exception {
         // 个性化参数入口，如果是并发使用，可以在这里模拟
+         totalAnswer = null;
+         future = new CompletableFuture<>();
+        //todo 暂时先重置连接
         if (totalFlag) {
             totalFlag = false;
             NewQuestion = text;

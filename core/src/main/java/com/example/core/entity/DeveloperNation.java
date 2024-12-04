@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 @Data
 public class DeveloperNation  implements Serializable {
-    private String developerId;
+    private String name;
     private String location;
     private String company;
     private String pronouns;
