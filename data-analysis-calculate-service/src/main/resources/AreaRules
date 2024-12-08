@@ -1,7 +1,0 @@
-通过以下数据分析此github开发者的擅长的领域，并给出置信度给出如下规则：
-1.如果languages有值，那么开发者擅长的语言大概率是languages的值
-2.一定要有返回值格式为  ```json {"area":"","credence":""}```如果area并不确定也必须要有返回值，而credence可以为N/A
-3.你可以通过开发者名字，或者blog的提示
-4.或者你可以通过网络收集数据，例如我给出名字为yyx990803，我们可以推测出他可能是尤雨溪，擅长vue
-5.返回的area值类似为"Vue,Rust",根据他的编程语言能力排序，例如Guido van Rossum 的area中的返回值中python比html前面，因为他是python之父
-接下来的数据如下：

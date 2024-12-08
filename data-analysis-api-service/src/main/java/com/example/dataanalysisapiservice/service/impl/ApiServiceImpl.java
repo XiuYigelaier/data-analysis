@@ -28,9 +28,9 @@ public class ApiServiceImpl implements ApiService {
     public TalentRank calculateRank(String login,Boolean updateFlag) {
         Optional<TalentRank> ans = talentRankRepository.findByLoginAndDeletedFalse(login);
         //不更新
-//        if(ans.isPresent()&&!updateFlag){
-//            return ans.get();
-//        }
+        if(ans.isPresent()&&!updateFlag){
+            return ans.get();
+        }
         //更新 先redis移除
         if(ans.isPresent()){
             TalentRank redisEntity =  ans.get();

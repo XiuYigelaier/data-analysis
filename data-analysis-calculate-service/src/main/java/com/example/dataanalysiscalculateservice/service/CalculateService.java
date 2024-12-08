@@ -26,8 +26,8 @@ import java.util.regex.Pattern;
 public class CalculateService {
     @Autowired
     CalculateClientFeign calculateClientFeign;
-    private static final String NATION_FILE_PATH = "D:\\javaProject1\\DataAnalysis\\data-analysis-calculate-service\\src\\main\\resources\\NationRules";
-    private static final  String AREA_FILE_PATH = "D:\\javaProject1\\DataAnalysis\\data-analysis-calculate-service\\src\\main\\resources\\AreaRules";
+    private static final String NATION_FILE_PATH = "D:\\javaProject1\\DataAnalysis\\data-analysis-calculate-service\\src\\main\\resources\\NationRules.txt";
+    private static final  String AREA_FILE_PATH = "D:\\javaProject1\\DataAnalysis\\data-analysis-calculate-service\\src\\main\\resources\\AreaRules.txt";
 
     public TalentRankTrans calculate(String login) throws Exception {
 
@@ -62,6 +62,8 @@ public class CalculateService {
         LinkedHashMap repositoriesList = (LinkedHashMap) user.get("repositories");
         calculateEntity.setGistCount((Integer) gistMap.get("totalCount")).setFlagCount(flagCount).setReposCount((Integer) repositoriesList.get("totalCount"))
                 .setFollowersCount((Integer) followerMap.get("totalCount"));
+        //开发者贡献度先算
+        calculateSum = calculateDeveloperParamContributions(calculateEntity).add(calculateSum);
 
         LinkedHashMap contributionsCollectionMap = (LinkedHashMap) user.get("contributionsCollection");
         ArrayList<LinkedHashMap> pullRequestReviewContributionsByRepositoryList = (ArrayList<LinkedHashMap>) contributionsCollectionMap.get("pullRequestReviewContributionsByRepository");
@@ -83,7 +85,7 @@ public class CalculateService {
                 calculateEntity.setPullReviewForReposCount((Integer) ((Map) pullRep.get("contributions")).get("totalCount"));
             }
             calculateEntity.setReposStarCount((Integer) rep.get("stargazerCount"));
-            calculateSum = calculateContributions(calculateEntity).add(calculateSum);
+            calculateSum = calculateReposContributions(calculateEntity).add(calculateSum);
             if (!ObjectUtils.isEmpty(rep.get("primaryLanguage"))) {
                 languages.add((String) ((Map) rep.get("primaryLanguage")).get("name"));
             }
@@ -105,7 +107,7 @@ public class CalculateService {
             if (!ObjectUtils.isEmpty(issueRep.get("contributions"))) {
                 calculateEntity.setIssuesForRepsCount((Integer) ((Map) issueRep.get("contributions")).get("totalCount"));
             }
-            calculateSum = calculateContributions(calculateEntity).add(calculateSum);
+            calculateSum = calculateReposContributions(calculateEntity).add(calculateSum);
             if (!ObjectUtils.isEmpty(rep.get("primaryLanguage"))) {
                 languages.add((String) ((Map) rep.get("primaryLanguage")).get("name"));
             }
@@ -125,7 +127,7 @@ public class CalculateService {
             if (!ObjectUtils.isEmpty(commitRep.get("contributions"))) {
                 calculateEntity.setCommitForReposCount((Integer) ((Map) commitRep.get("contributions")).get("totalCount"));
             }
-            calculateSum = calculateContributions(calculateEntity).add(calculateSum);
+            calculateSum = calculateReposContributions(calculateEntity).add(calculateSum);
             if (!ObjectUtils.isEmpty(rep.get("primaryLanguage"))) {
                 languages.add((String) ((Map) rep.get("primaryLanguage")).get("name"));
             }
@@ -186,13 +188,15 @@ public class CalculateService {
         }
 
     }
+    public BigDecimal calculateDeveloperParamContributions(CalculateEntity entity) {
+        return BigDecimal.valueOf(Math.log(entity.getFollowersCount()) + 0.1 * entity.getReposCount() + 0.1 * entity.getGistCount() + 0.1 * entity.getFlagCount());
+    }
 
-
-    public BigDecimal calculateContributions(CalculateEntity entity) {
-        BigDecimal developerParam = BigDecimal.valueOf(Math.log(entity.getFollowersCount()) + 0.1 * entity.getReposCount() + 0.1 * entity.getGistCount() + 0.1 * entity.getFlagCount());
-        BigDecimal developerForReposParam = BigDecimal.valueOf(0.3 * entity.getPullReviewForReposCount() + 0.6 * entity.getCommitForReposCount() + 0.1 * entity.getIssuesForRepsCount());
+    public BigDecimal calculateReposContributions(CalculateEntity entity) {
+          BigDecimal developerForReposParam = BigDecimal.valueOf(0.3 * entity.getPullReviewForReposCount() + 0.6 * entity.getCommitForReposCount() + 0.1 * entity.getIssuesForRepsCount());
         BigDecimal reposParam = BigDecimal.valueOf(0.1 * entity.getReposCommitsCount() + 0.2 * entity.getReposIssuesCount() + 0.3 * entity.getReposWatcherCounts() + 0.4 * entity.getReposStarCount());
-        return developerParam.add(developerForReposParam.add(reposParam));
+
+        return developerForReposParam.add(reposParam);
     }
 
 

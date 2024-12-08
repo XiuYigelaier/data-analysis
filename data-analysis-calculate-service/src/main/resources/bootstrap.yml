@@ -18,9 +18,9 @@ spring:
 xf:
   config:
     hostUrl: https://spark-api.xf-yun.com/v4.0/chat
-    appId: 22af0843
-    apiSecret: MWM5NDZjZjViZDVhYzEzMjM3NjBlMjA5
-    apiKey: 257c0abf0e25d98e937507d957ad32eb
+    appId: 774dcbc7
+    apiSecret: MjFhMjM0NTM3NjllZjA3ZTU3MTY2YTQ5
+    apiKey: 3e40f1ca3f2b6bf6b94fe55d2a452758
     maxResponseTime: 30
     domain: 4.0Ultra
 

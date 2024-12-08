@@ -15,8 +15,8 @@ public class ApiController {
     @GetMapping("/search")
     public ResponseModel<?> calculateRank(@RequestParam String login,   Boolean updateFlag) {
         try {
-            apiService.calculateRank(login,updateFlag);
-            return ResponseModel.success("成功");
+
+            return ResponseModel.success(apiService.calculateRank(login,updateFlag));
         } catch (Exception e) {
             return ResponseModel.failure("计算失败" +  e.getMessage());
         }

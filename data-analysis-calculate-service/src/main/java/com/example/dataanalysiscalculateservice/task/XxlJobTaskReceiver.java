@@ -30,8 +30,8 @@ import java.util.regex.Pattern;
 public class XxlJobTaskReceiver {
     @Autowired
     CalculateClientFeign calculateClientFeign;
-    private static final String NATION_FILE_PATH = "D:\\javaProject1\\DataAnalysis\\data-analysis-calculate-service\\src\\main\\resources\\NationRules";
-    private static final String AREA_FILE_PATH = "D:\\javaProject1\\DataAnalysis\\data-analysis-calculate-service\\src\\main\\resources\\AreaRules";
+    private static final String NATION_FILE_PATH = "D:\\javaProject1\\DataAnalysis\\data-analysis-calculate-service\\src\\main\\resources\\NationRules.txt";
+    private static final String AREA_FILE_PATH = "D:\\javaProject1\\DataAnalysis\\data-analysis-calculate-service\\src\\main\\resources\\AreaRules.txt";
 
     @Autowired
     TalentRankRepository talentRankRepository;
@@ -66,6 +66,8 @@ public class XxlJobTaskReceiver {
         calculateEntity.setGistCount((Integer) gistMap.get("totalCount")).setFlagCount(flagCount).setReposCount((Integer) repositoriesList.get("totalCount"))
                 .setFollowersCount((Integer) followerMap.get("totalCount"));
 
+        calculateSum = calculateService.calculateDeveloperParamContributions(calculateEntity).add(calculateSum);
+
         LinkedHashMap contributionsCollectionMap = (LinkedHashMap) user.get("contributionsCollection");
         ArrayList<LinkedHashMap> pullRequestReviewContributionsByRepositoryList = (ArrayList<LinkedHashMap>) contributionsCollectionMap.get("pullRequestReviewContributionsByRepository");
         ArrayList<LinkedHashMap> issueContributionsByRepositoryList = (ArrayList<LinkedHashMap>) contributionsCollectionMap.get("issueContributionsByRepository");
@@ -86,7 +88,7 @@ public class XxlJobTaskReceiver {
                 calculateEntity.setPullReviewForReposCount((Integer) ((Map) pullRep.get("contributions")).get("totalCount"));
             }
             calculateEntity.setReposStarCount((Integer) rep.get("stargazerCount"));
-            calculateSum = calculateService.calculateContributions(calculateEntity).add(calculateSum);
+            calculateSum = calculateService.calculateReposContributions(calculateEntity).add(calculateSum);
             if (!ObjectUtils.isEmpty(rep.get("primaryLanguage"))) {
                 languages.add((String) ((Map) rep.get("primaryLanguage")).get("name"));
             }
@@ -108,7 +110,7 @@ public class XxlJobTaskReceiver {
             if (!ObjectUtils.isEmpty(issueRep.get("contributions"))) {
                 calculateEntity.setIssuesForRepsCount((Integer) ((Map) issueRep.get("contributions")).get("totalCount"));
             }
-            calculateSum = calculateService.calculateContributions(calculateEntity).add(calculateSum);
+            calculateSum = calculateService.calculateReposContributions(calculateEntity).add(calculateSum);
             if (!ObjectUtils.isEmpty(rep.get("primaryLanguage"))) {
                 languages.add((String) ((Map) rep.get("primaryLanguage")).get("name"));
             }
@@ -128,7 +130,7 @@ public class XxlJobTaskReceiver {
             if (!ObjectUtils.isEmpty(commitRep.get("contributions"))) {
                 calculateEntity.setCommitForReposCount((Integer) ((Map) commitRep.get("contributions")).get("totalCount"));
             }
-            calculateSum = calculateService.calculateContributions(calculateEntity).add(calculateSum);
+            calculateSum = calculateService.calculateReposContributions(calculateEntity).add(calculateSum);
             if (!ObjectUtils.isEmpty(rep.get("primaryLanguage"))) {
                 languages.add((String) ((Map) rep.get("primaryLanguage")).get("name"));
             }
