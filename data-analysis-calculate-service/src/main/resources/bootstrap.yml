@@ -17,12 +17,12 @@ spring:
       name: config
 xf:
   config:
-    hostUrl: https://spark-api.xf-yun.com/v3.1/chat
-    appId: 03a6352e
-    apiSecret: ZWUzMTBlNGZmMjRiY2NjNTQxMmU4Mjk5
-    apiKey: 8677832a85ddc0dd8f8177eddd15c1ad
+    hostUrl: https://spark-api.xf-yun.com/v4.0/chat
+    appId: 22af0843
+    apiSecret: MWM5NDZjZjViZDVhYzEzMjM3NjBlMjA5
+    apiKey: 257c0abf0e25d98e937507d957ad32eb
     maxResponseTime: 30
-    domain: generalv3
+    domain: 4.0Ultra
 
 
 

@@ -125,12 +125,14 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
         if(ObjectUtils.isEmpty(result)){
             throw new  RuntimeException("无result：网络错误");
         }
-        if(ObjectUtils.isEmpty(result.get("user"))){
-            //无法访问这个用户
-            return  null;
-        }
-
-        asyncSave.save(developerName, result);
+//        if(ObjectUtils.isEmpty(result.get("user"))){
+//            //无法访问这个用户
+//            return  null;
+//        }
+        Map data = (Map)result.get("data");
+       if(!ObjectUtils.isEmpty(data.get("user"))){
+           asyncSave.save(developerName, result);
+       }
         return result;
 
     }

@@ -13,6 +13,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -71,7 +72,12 @@ public class XxlJobTaskSend {
                             String login =((JSONObject)item).getString("login");
                             loginList.add(login);
                             Map searchMap = graphQLSearchService.graphqlSearch(login);
-                            rabbitTemplate.convertAndSend("queue.calculate",searchMap);
+                            Map data = (Map)searchMap.get("data");
+                            if(!ObjectUtils.isEmpty(data.get("user"))){
+                                searchMap.put("login",login);
+                                rabbitTemplate.convertAndSend("queue.calculate",searchMap);
+                            }
+
                         }
                 );
             } else {

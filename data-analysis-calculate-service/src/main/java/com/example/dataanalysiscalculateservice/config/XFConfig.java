@@ -34,6 +34,9 @@ public class XFConfig {
     private String apiKey;
     @Value("${xf.config.hostUrl}")
     private String hostUrl;
+
+    @Value("${xf.config.domain}")
+    private  String domain;
     @Value("${xf.config.maxResponseTime}")
     private Integer maxResponseTime;
 
@@ -76,7 +79,7 @@ public class XFConfig {
 
         JSONObject parameter =new JSONObject();
         JSONObject chat =new JSONObject();
-        chat.put("domain","generalv3.5");
+        chat.put("domain",domain);
         parameter.put("chat",chat);
 
         body.put("parameter",parameter);

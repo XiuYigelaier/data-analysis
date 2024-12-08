@@ -1,7 +1,7 @@
-package com.example.dataanalysisapiservice.repository;
+package com.example.core.repository;
 
 import com.example.core.entity.DeveloperAndProjectRelationShip;
-import com.example.dataanalysisapiservice.pojo.entity.TalentRank;
+import com.example.core.entity.TalentRank;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,4 +13,6 @@ import java.util.Optional;
 public interface TalentRankRepository  extends CrudRepository<TalentRank,String> {
     Optional<TalentRank> findByGitIdAndDeletedFalse(String gitId);
     Optional<List<TalentRank>>  findAllByOrderByTalentRankDesc();
+
+    Optional<TalentRank> findByLoginAndDeletedFalse(String login);
 }

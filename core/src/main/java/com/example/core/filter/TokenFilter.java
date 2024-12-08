@@ -49,12 +49,14 @@ public class TokenFilter implements Filter {
                     Claims claim = JWTUtils.parseJWT(token);
                     userId = claim.getSubject();
                 } catch (Exception e) {
-                    throw new RuntimeException("令牌异常", e);
+                    httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
                 }
                 String redisKey = "login:" + userId;
                 LoginUser user = (LoginUser) redisUtil.get(redisKey);
                 if (ObjectUtils.isEmpty(user)) {
-                    throw new RuntimeException("redis无数据:" + redisKey);
+                    httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
 
                 }
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(user, null, null);

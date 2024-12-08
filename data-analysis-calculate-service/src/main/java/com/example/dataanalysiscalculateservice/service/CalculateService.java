@@ -192,7 +192,7 @@ public class CalculateService {
         BigDecimal developerParam = BigDecimal.valueOf(Math.log(entity.getFollowersCount()) + 0.1 * entity.getReposCount() + 0.1 * entity.getGistCount() + 0.1 * entity.getFlagCount());
         BigDecimal developerForReposParam = BigDecimal.valueOf(0.3 * entity.getPullReviewForReposCount() + 0.6 * entity.getCommitForReposCount() + 0.1 * entity.getIssuesForRepsCount());
         BigDecimal reposParam = BigDecimal.valueOf(0.1 * entity.getReposCommitsCount() + 0.2 * entity.getReposIssuesCount() + 0.3 * entity.getReposWatcherCounts() + 0.4 * entity.getReposStarCount());
-        return developerParam.multiply(developerForReposParam.multiply(reposParam));
+        return developerParam.add(developerForReposParam.add(reposParam));
     }
 
 

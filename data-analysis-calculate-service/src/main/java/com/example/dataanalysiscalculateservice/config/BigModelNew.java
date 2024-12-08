@@ -28,9 +28,9 @@ public class BigModelNew extends WebSocketListener {
     // Spark4.0 Ultra  https://spark-api.xf-yun.com/v4.0/chat      domain参数为4.0Ultra
     public static final String hostUrl = "https://spark-api.xf-yun.com/v4.0/chat";
     public static final String domain = "4.0Ultra";
-    public static final String appId = "03a6352e";
-    public static final String apiSecret = "ZWUzMTBlNGZmMjRiY2NjNTQxMmU4Mjk5";
-    public static final String apiKey = "8677832a85ddc0dd8f8177eddd15c1ad";
+    public static final String appId = "22af0843";
+    public static final String apiSecret = "MWM5NDZjZjViZDVhYzEzMjM3NjBlMjA5";
+    public static final String apiKey = "257c0abf0e25d98e937507d957ad32eb";
 
     public static List<RoleContent> historyList = new ArrayList<>(); // 对话历史存储集合
 
@@ -229,6 +229,7 @@ public class BigModelNew extends WebSocketListener {
         if (myJsonParse.header.code != 0) {
             System.out.println("发生错误，错误码为：" + myJsonParse.header.code);
             System.out.println("本次请求的sid为：" + myJsonParse.header.sid);
+            System.out.println("原因为：" + myJsonParse);
             webSocket.close(1000, "");
         }
         List<Text> textList = myJsonParse.payload.choices.text;

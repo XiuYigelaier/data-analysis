@@ -1,6 +1,5 @@
-package com.example.dataanalysisapiservice.pojo.entity;
+package com.example.core.entity;
 
-import com.example.core.entity.BaseEntity;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -22,4 +21,7 @@ public class TalentRank extends BaseEntity {
     @Column(columnDefinition="decimal(18,2)")
     BigDecimal talentRank;
 
+    public TalentRank() {
+        name = "无名氏";
+    }
 }

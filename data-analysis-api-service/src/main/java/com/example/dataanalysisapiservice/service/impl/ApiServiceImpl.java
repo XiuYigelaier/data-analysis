@@ -1,17 +1,16 @@
 package com.example.dataanalysisapiservice.service.impl;
 
 import com.example.core.entity.ResponseModel;
+import com.example.core.entity.TalentRank;
 import com.example.core.utils.RedisUtil;
 import com.example.dataanalysisapiservice.feign.CollectionClientFeign;
-import com.example.dataanalysisapiservice.pojo.entity.TalentRank;
-import com.example.dataanalysisapiservice.repository.TalentRankRepository;
+import com.example.core.repository.TalentRankRepository;
 import com.example.dataanalysisapiservice.service.ApiService;
 import io.jsonwebtoken.lang.Collections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -26,8 +25,19 @@ public class ApiServiceImpl implements ApiService {
     @Autowired
     TalentRankRepository talentRankRepository;
     @Override
-    public TalentRank calculateRank(String projectUser) {
-        ResponseModel<?> responseModel = collectionClientFeign.calcuate(projectUser);
+    public TalentRank calculateRank(String login,Boolean updateFlag) {
+        Optional<TalentRank> ans = talentRankRepository.findByLoginAndDeletedFalse(login);
+        //不更新
+//        if(ans.isPresent()&&!updateFlag){
+//            return ans.get();
+//        }
+        //更新 先redis移除
+        if(ans.isPresent()){
+            TalentRank redisEntity =  ans.get();
+            redisUtil.removeZSet("rank",redisEntity);
+        }
+
+        ResponseModel<?> responseModel = collectionClientFeign.calcuate(login);
         if(!responseModel.isSuccess()){
             throw new RuntimeException(responseModel.getMessageInfo());
         }

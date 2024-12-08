@@ -80,6 +80,9 @@ public class RedisUtil {
     public void addZSet(String key, Object val, Double rank){
         redisTemplate.opsForZSet().add(key,val,rank);
     }
+    public void removeZSet(String key, Object val){
+        redisTemplate.opsForZSet().remove(key,val);
+    }
 
     public <T> List<T> getZSet(String key){
           Set<ZSetOperations.TypedTuple<T>> sortedSet =  redisTemplate.opsForZSet().reverseRangeByScore(key,0,-1);
