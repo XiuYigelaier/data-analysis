@@ -1,26 +1,23 @@
 package com.example.dataanalysiscollectionservice.service.impl;
 
-import com.example.core.repository.DeveloperAndProjectRelationShipRepository;
-import com.example.core.repository.DeveloperRepository;
-import com.example.core.repository.ProjectRepository;
+import com.example.core.repository.mysql.DeveloperAndProjectRelationShipRepository;
+import com.example.core.repository.mysql.DeveloperRepository;
+import com.example.core.repository.mysql.ProjectRepository;
 import com.example.core.service.AsyncSave;
 import com.example.core.service.GraphQLSearchService;
 
 
-import com.xxl.job.core.handler.annotation.XxlJob;
-import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.mountcloud.graphql.GraphqlClient;
 import org.mountcloud.graphql.request.query.DefaultGraphqlQuery;
 import org.mountcloud.graphql.request.query.GraphqlQuery;
+
 import org.mountcloud.graphql.request.result.ResultAttributtes;
 import org.mountcloud.graphql.response.GraphqlResponse;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -90,6 +87,7 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
         contributionsCollection.addResultAttributes(pullRequestReviewContributionsByRepository);
         pullRequestReviewContributionsByRepository.addResultAttributes(contributions);
         repository.addResultAttributes(primaryLanguage);
+        repository.addResultAttributes("description");
 
         ResultAttributtes issueContributionsByRepository = new ResultAttributtes("issueContributionsByRepository");
         issueContributionsByRepository.addResultAttributes(repository);
@@ -101,7 +99,10 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
         commitContributionsByRepository.addResultAttributes(contributions);
 
         contributionsCollection.addResultAttributes(commitContributionsByRepository);
-        ResultAttributtes repositories = new ResultAttributtes("repositories");
+        ResultAttributtes repositories = new ResultAttributtes("repositories(first: 20, orderBy: { field: STARGAZERS, direction: DESC })");
+        ResultAttributtes nodes =  new ResultAttributtes("nodes");
+        nodes.addResultAttributes("name","url","stargazerCount");
+        repositories.addResultAttributes(nodes);
         repositories.addResultAttributes("totalCount");
         query.addResultAttributes(repositories);
 
@@ -112,6 +113,24 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
         ResultAttributtes gists = new ResultAttributtes("gists");
         gists.addResultAttributes("totalCount");
         query.addResultAttributes(gists);
+
+
+        ResultAttributtes description = new ResultAttributtes("description");
+        nodes.addResultAttributes(description);
+
+
+
+        ResultAttributtes following = new ResultAttributtes("following(first:100)");
+        following.addResultAttributes("totalCount");
+        ResultAttributtes followingNode = new ResultAttributtes("nodes");
+        followingNode.addResultAttributes("login","id","avatarUrl");
+        following.addResultAttributes(followingNode);
+        query.addResultAttributes(following);
+
+//        pullRequestReviewContributionsByRepository.addResultAttributes(description);
+//        issueContributionsByRepository.addResultAttributes(description);
+//        commitContributionsByRepository.addResultAttributes(description);
+
 
 
         Map result = null;

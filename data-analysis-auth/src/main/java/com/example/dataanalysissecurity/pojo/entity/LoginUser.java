@@ -1,24 +1,24 @@
 //package com.example.dataanalysissecurity.pojo.entity;
 //
-//import com.example.core.entity.User;
+//import com.example.core.entity.UserEntity;
 //import org.springframework.security.core.GrantedAuthority;
 //import org.springframework.security.core.userdetails.UserDetails;
 //
 //import java.util.Collection;
 //
 //public class LoginUser implements UserDetails {
-//    private User user;
+//    private UserEntity user;
 //
 //
-//    public User getUser() {
+//    public UserEntity getUser() {
 //        return user;
 //    }
 //
-//    public void setUser(User user) {
+//    public void setUser(UserEntity user) {
 //        this.user = user;
 //    }
 //
-//    public LoginUser(User user) {
+//    public LoginUser(UserEntity user) {
 //        this.user = user;
 //    }
 //

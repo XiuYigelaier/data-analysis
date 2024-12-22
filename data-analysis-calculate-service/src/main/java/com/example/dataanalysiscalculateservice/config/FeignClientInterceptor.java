@@ -1,20 +1,10 @@
 package com.example.dataanalysiscalculateservice.config;
 
-import com.example.core.entity.LoginUser;
-import com.example.core.utils.JWTUtils;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
-import org.springframework.http.HttpHeaders;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.Objects;
-import java.util.UUID;
 
 @Component
 public class FeignClientInterceptor implements RequestInterceptor {

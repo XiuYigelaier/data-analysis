@@ -1,6 +1,6 @@
-package com.example.core.entity;
+package com.example.core.pojo.base;
 
-import com.example.core.entity.User;
+import com.example.core.pojo.entity.mysql.UserEntity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,18 +9,18 @@ import java.util.Collection;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LoginUser implements UserDetails {
-    private User user;
+    private UserEntity userEntity;
 
-    public LoginUser(User user) {
-        this.user = user;
+    public LoginUser(UserEntity userEntity) {
+        this.userEntity = userEntity;
     }
 
-    public User getUser() {
-        return user;
+    public UserEntity getUser() {
+        return userEntity;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUser(UserEntity userEntity) {
+        this.userEntity = userEntity;
     }
 
 
@@ -34,12 +34,12 @@ public class LoginUser implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return userEntity.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return user.getUserName();
+        return userEntity.getUserName();
     }
 
     @Override

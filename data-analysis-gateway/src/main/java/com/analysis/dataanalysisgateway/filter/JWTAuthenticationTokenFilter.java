@@ -1,13 +1,11 @@
 package com.analysis.dataanalysisgateway.filter;
 
 import com.alibaba.fastjson.JSON;
-import com.example.core.entity.LoginUser;
-import com.example.core.entity.ResponseModel;
-import com.example.core.entity.User;
+import com.example.core.pojo.base.LoginUser;
+import com.example.core.pojo.base.ResponseModel;
 import com.example.core.utils.JWTUtils;
 import com.example.core.utils.RedisUtil;
 import io.jsonwebtoken.Claims;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;

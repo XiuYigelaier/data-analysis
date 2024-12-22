@@ -1,4 +1,4 @@
-package com.example.core.repository;
+package com.example.core.repository.mysql;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;

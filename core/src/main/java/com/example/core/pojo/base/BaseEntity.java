@@ -1,4 +1,4 @@
-package com.example.core.entity;
+package com.example.core.pojo.base;
 
 
 import com.example.core.utils.DateUtil;

@@ -1,6 +1,6 @@
 package com.example.dataanalysiscalculateservice.feign;
 
-import com.example.core.entity.ResponseModel;
+import com.example.core.pojo.base.ResponseModel;
 import com.example.dataanalysiscalculateservice.config.FeignClientInterceptor;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;

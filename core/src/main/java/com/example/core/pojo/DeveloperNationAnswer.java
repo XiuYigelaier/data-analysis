@@ -1,13 +1,12 @@
-package com.example.core.entity;
+package com.example.core.pojo;
 
 import lombok.Data;
 
-import javax.persistence.Entity;
 import java.io.Serializable;
 
 
 @Data
-public class DeveloperNation  implements Serializable {
+public class DeveloperNationAnswer implements Serializable {
     private String name;
     private String location;
     private String company;

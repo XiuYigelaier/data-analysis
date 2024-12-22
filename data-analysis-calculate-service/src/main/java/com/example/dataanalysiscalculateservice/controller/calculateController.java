@@ -1,11 +1,9 @@
 package com.example.dataanalysiscalculateservice.controller;
 
-import com.example.core.entity.ResponseModel;
-import com.example.dataanalysiscalculateservice.config.BigModelNew;
+import com.example.core.pojo.base.ResponseModel;
 import com.example.dataanalysiscalculateservice.config.XFConfig;
 import com.example.dataanalysiscalculateservice.service.CalculateService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

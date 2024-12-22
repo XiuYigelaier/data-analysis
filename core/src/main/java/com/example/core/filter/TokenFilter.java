@@ -1,10 +1,9 @@
 package com.example.core.filter;
 
-import com.example.core.entity.LoginUser;
+import com.example.core.pojo.base.LoginUser;
 import com.example.core.utils.JWTUtils;
 import com.example.core.utils.RedisUtil;
 import io.jsonwebtoken.Claims;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;

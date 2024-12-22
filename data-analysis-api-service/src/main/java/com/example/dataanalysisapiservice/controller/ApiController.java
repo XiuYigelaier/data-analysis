@@ -1,7 +1,10 @@
 package com.example.dataanalysisapiservice.controller;
 
-import com.example.core.entity.ResponseModel;
+import com.example.core.pojo.base.ResponseModel;
 import com.example.dataanalysisapiservice.service.ApiService;
+import org.neo4j.driver.Logging;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,12 +15,16 @@ public class ApiController {
     @Autowired
     ApiService apiService;
 
+    private static final Logger log = LoggerFactory.getLogger(ApiService.class);
+
     @GetMapping("/search")
     public ResponseModel<?> calculateRank(@RequestParam String login,   Boolean updateFlag) {
         try {
 
             return ResponseModel.success(apiService.calculateRank(login,updateFlag));
         } catch (Exception e) {
+            log.error("计算是失败：",e);
+
             return ResponseModel.failure("计算失败" +  e.getMessage());
         }
     }

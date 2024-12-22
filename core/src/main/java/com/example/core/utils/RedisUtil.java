@@ -6,6 +6,7 @@ package com.example.core.utils;
 //
 
 
+import com.example.core.pojo.vo.TalentRankVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
@@ -60,6 +61,11 @@ public class RedisUtil {
         }
 
     }
+    public boolean existsInZSet(String zsetName, String key) {
+        ZSetOperations<String, Object> zSetOps = redisTemplate.opsForZSet();
+        Double score = zSetOps.score(zsetName, key);
+        return score != null;
+    }
 
     public boolean exists(String key) {
         return this.redisTemplate.hasKey(key);
@@ -80,17 +86,34 @@ public class RedisUtil {
     public void addZSet(String key, Object val, Double rank){
         redisTemplate.opsForZSet().add(key,val,rank);
     }
-    public void removeZSet(String key, Object val){
-        redisTemplate.opsForZSet().remove(key,val);
+    public void removeZSet(String key, String login){
+        Set<ZSetOperations.TypedTuple<TalentRankVO>> zset = redisTemplate.opsForZSet().rangeWithScores(key, 0, -1);
+
+        if (zset != null) {
+            for (ZSetOperations.TypedTuple<TalentRankVO> tuple : zset) {
+                TalentRankVO vo = tuple.getValue();
+                if (vo != null && login.equals(vo.getLogin())) {
+                    redisTemplate.opsForZSet().remove(key, vo);
+                    break; // 找到并删除后可以退出循环
+                }
+            }
+        }
     }
 
     public <T> List<T> getZSet(String key){
-          Set<ZSetOperations.TypedTuple<T>> sortedSet =  redisTemplate.opsForZSet().reverseRangeByScore(key,0,-1);
-          List<T>  ans = new ArrayList<>();
-          for(ZSetOperations.TypedTuple<T> tuple: sortedSet){
-              ans.add(tuple.getValue());
-          }
-          return  ans;
+        Set<ZSetOperations.TypedTuple<T>> sortedSet = redisTemplate.opsForZSet().reverseRangeByScoreWithScores(key, 0, Double.MAX_VALUE);
+        List<T> ans = new ArrayList<>();
+
+        if (sortedSet == null || sortedSet.isEmpty()) {
+            System.out.println("No data found for key: " + key);
+            return ans;
+        }
+
+        for (ZSetOperations.TypedTuple<T> tuple : sortedSet) {
+            ans.add(tuple.getValue());
+        }
+
+        return ans;
     }
 
 

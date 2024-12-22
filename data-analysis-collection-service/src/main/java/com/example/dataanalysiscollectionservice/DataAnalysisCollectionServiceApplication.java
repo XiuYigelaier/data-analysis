@@ -15,7 +15,7 @@ import javax.persistence.Entity;
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableJpaRepositories(basePackages = {"com.example.core.repository","com.example.dataanalysiscollectionservice.*"})
-@EntityScan(basePackages = {"com.example.core.entity","com.example.dataanalysiscollectionservice.*"})
+@EntityScan(basePackages = {"com.example.core.pojo","com.example.dataanalysiscollectionservice.*"})
 @ComponentScan({"com.example.*","com.example.dataanalysiscollectionservice.*"})
 @EnableAsync
 @EnableTransactionManagement

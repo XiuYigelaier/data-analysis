@@ -1,8 +1,12 @@
 package com.example.dataanalysiscalculateservice.task;
 
 import com.alibaba.fastjson.JSONObject;
-import com.example.core.entity.*;
-import com.example.core.repository.TalentRankRepository;
+import com.example.core.enums.ProjectClassificationEnum;
+import com.example.core.pojo.*;
+import com.example.core.pojo.entity.mysql.TalentRankEntity;
+import com.example.core.pojo.entity.mysql.TalentRankProjectEntity;
+import com.example.core.repository.mysql.TalentRankProjectRepository;
+import com.example.core.repository.mysql.TalentRankRepository;
 import com.example.dataanalysiscalculateservice.config.BigModelNew;
 import com.example.dataanalysiscalculateservice.feign.CalculateClientFeign;
 import com.example.dataanalysiscalculateservice.pojo.CalculateEntity;
@@ -13,17 +17,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Component
 @RabbitListener(queues = "queue.calculate")
@@ -33,22 +34,37 @@ public class XxlJobTaskReceiver {
     private static final String NATION_FILE_PATH = "D:\\javaProject1\\DataAnalysis\\data-analysis-calculate-service\\src\\main\\resources\\NationRules.txt";
     private static final String AREA_FILE_PATH = "D:\\javaProject1\\DataAnalysis\\data-analysis-calculate-service\\src\\main\\resources\\AreaRules.txt";
 
+
+    private static final String CLASSIFY_FILE_PATH=  "D:\\javaProject1\\DataAnalysis\\data-analysis-calculate-service\\src\\main\\resources\\ProjectClassification.txt";
     @Autowired
     TalentRankRepository talentRankRepository;
+
+    @Autowired
+    TalentRankProjectRepository talentRankProjectRepository;
 
     @Autowired
     CalculateService calculateService;
 
     @RabbitHandler
     public void receiver(Map message) throws Exception {
+        SecurityContextHolder ctx = new SecurityContextHolder();
         Set<String> languages = new HashSet<>();
+        List<Double> historyScore = new ArrayList();
         BigDecimal calculateSum = BigDecimal.ZERO;
+        calculateSum.setScale(2,BigDecimal.ROUND_HALF_UP);
         Map data = (Map) message.get("data");
         Map user = (Map) data.get("user");
-        TalentRank talentRank = new TalentRank();
-        Optional<TalentRank> talentRankOpt = talentRankRepository.findByGitIdAndDeletedFalse((String) user.get("id"));
+        TalentRankEntity talentRank = new TalentRankEntity();
+        Optional<TalentRankEntity> talentRankOpt = talentRankRepository.findByGitIdAndDeletedFalse((String) user.get("id"));
         if (talentRankOpt.isPresent()) {
             talentRank = talentRankOpt.get();
+            if(StringUtils.hasText(talentRank.getScoreHistory())){
+                historyScore = JSONObject.parseArray(talentRank.getScoreHistory(), Double.class);
+            }
+            if(talentRankProjectRepository.findAllByTalentRankIdAndDeletedFalse(talentRank.getId()).isPresent()){
+                talentRankProjectRepository.deleteAllByTalentRankId(talentRank.getId());
+            }
+
         }
         talentRank.setBlo((String) user.get("bio"));
         talentRank.setAvatarUrl((String) user.get("avatarUrl"));
@@ -75,6 +91,8 @@ public class XxlJobTaskReceiver {
 
         for (LinkedHashMap pullRep : pullRequestReviewContributionsByRepositoryList) {
             LinkedHashMap rep = (LinkedHashMap) pullRep.get("repository");
+            if (!ObjectUtils.isEmpty(rep.get("description"))){
+            }
             if (!ObjectUtils.isEmpty(rep.get("commitComments"))) {
                 calculateEntity.setReposCommitsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
             }
@@ -136,20 +154,27 @@ public class XxlJobTaskReceiver {
             }
         }
         talentRank.setTalentRank(calculateSum);
+        historyScore.add(calculateSum.doubleValue());
+        talentRank.setScoreHistory( JSONObject.toJSONString(historyScore));
+//暂时
+        talentRank.setLocation((String) user.get("location"));
+        StringBuilder stringBuilder = new StringBuilder();
+        for(String language :languages){
+            stringBuilder.append(language+",");
+        }
 
-
-        //nation大模型推测
-        DeveloperNation developerNation = new DeveloperNation();
-        developerNation.setName((String) user.get("name"));
-        developerNation.setLocation((String) user.get("location"));
-        developerNation.setBio((String) user.get("bio"));
-        developerNation.setCompany((String) user.get("company"));
-        developerNation.setPronouns((String) user.get("pronouns"));
-        SecurityContextHolder ctx = new SecurityContextHolder();
+        talentRank.setAreas(stringBuilder.toString());
+//        //nation大模型推测
+        DeveloperNationAnswer developerNationAnswer = new DeveloperNationAnswer();
+        developerNationAnswer.setName((String) user.get("name"));
+        developerNationAnswer.setLocation((String) user.get("location"));
+        developerNationAnswer.setBio((String) user.get("bio"));
+        developerNationAnswer.setCompany((String) user.get("company"));
+        developerNationAnswer.setPronouns((String) user.get("pronouns"));
         BigModelNew localModelNew = new BigModelNew(ctx.toString(), true);
         byte[] nationBytes = Files.readAllBytes(Paths.get(NATION_FILE_PATH));
         String localRule = new String(nationBytes, StandardCharsets.UTF_8);
-        CompletableFuture<String> localFuture = localModelNew.requestModel(localRule + developerNation);
+        CompletableFuture<String> localFuture = localModelNew.requestModel(localRule + developerNationAnswer);
         //等待上次完成
         if (!localFuture.isDone()) {
             Thread.sleep(200);
@@ -161,18 +186,45 @@ public class XxlJobTaskReceiver {
 
         //调用大模型获取擅长领域
         BigModelNew areaModelNew = new BigModelNew(ctx.toString(), true);
-        DeveloperArea developerArea = new DeveloperArea();
-        AreaAnswerModel areaAnswerModel = new AreaAnswerModel();
+        DeveloperAreaAnswer developerAreaAnswer = new DeveloperAreaAnswer();
         System.out.println("language:" + languages);
-        developerArea.setLanguages(languages);
-        developerArea.setBlo((String) user.get("bio"));
+        developerAreaAnswer.setLanguages(languages);
+        developerAreaAnswer.setBlo((String) user.get("bio"));
         byte[] areaBytes = Files.readAllBytes(Paths.get(AREA_FILE_PATH));
         String areaRule = new String(areaBytes, StandardCharsets.UTF_8);
-        CompletableFuture<String> areaFuture = areaModelNew.requestModel(areaRule + developerArea);
+        CompletableFuture<String> areaFuture = areaModelNew.requestModel(areaRule + developerAreaAnswer);
         JSONObject areaObj = calculateService.modelAnswerToJsonObject(areaFuture.get());
         talentRank.setAreas((String) areaObj.get("area"));
         talentRank.setAreaCredence((String) areaObj.get("credence"));
-        talentRankRepository.save(talentRank);
+        TalentRankEntity talentRankEntity = talentRankRepository.save(talentRank);
+        System.out.println(talentRankEntity);
+        String talentRankId = talentRankEntity.getId();
+
+
+        ArrayList<LinkedHashMap> nodes = (ArrayList) repositoriesList.get("nodes");
+        for(LinkedHashMap rep:nodes){
+            ProjectClassifyAnswer projectClassifyAnswer = new ProjectClassifyAnswer();
+            TalentRankProjectEntity repository = new TalentRankProjectEntity();
+            repository.setName((String) rep.get("name"));
+            projectClassifyAnswer.setProjectName((String) rep.get("name"));
+            repository.setUrl((String) rep.get("url"));
+            repository.setStarCount((Integer) rep.get("stargazerCount"));
+            repository.setTalentRankId(talentRankId);
+            repository.setDescription((String) rep.get("description"));
+            projectClassifyAnswer.setDescription((String) rep.get("description"));
+            BigModelNew bigModelNew = new BigModelNew(ctx.toString(),true);
+            byte[] classifyBytes = Files.readAllBytes(Paths.get(CLASSIFY_FILE_PATH));
+            String classifyRule = new String(classifyBytes, StandardCharsets.UTF_8);
+            CompletableFuture<String> classifyFuture = localModelNew.requestModel(classifyRule + projectClassifyAnswer);
+            //等待上次完成
+            if (!classifyFuture.isDone()) {
+                Thread.sleep(200);
+            }
+            String classify = classifyFuture.get();
+            repository.setClassification(ProjectClassificationEnum.valueOf(classify));
+            talentRankProjectRepository.save(repository);
+
+        }
 
     }
 

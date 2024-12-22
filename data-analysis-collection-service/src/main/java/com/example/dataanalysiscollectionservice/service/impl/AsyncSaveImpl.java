@@ -1,12 +1,12 @@
 package com.example.dataanalysiscollectionservice.service.impl;
 
 
-import com.example.core.entity.Developer;
-import com.example.core.entity.DeveloperAndProjectRelationShip;
-import com.example.core.entity.Project;
-import com.example.core.repository.DeveloperAndProjectRelationShipRepository;
-import com.example.core.repository.DeveloperRepository;
-import com.example.core.repository.ProjectRepository;
+import com.example.core.pojo.entity.mysql.DeveloperProjectEntity;
+import com.example.core.pojo.entity.mysql.DeveloperEntity;
+import com.example.core.pojo.entity.mysql.DeveloperAndProjectRelationShipEntity;
+import com.example.core.repository.mysql.DeveloperAndProjectRelationShipRepository;
+import com.example.core.repository.mysql.DeveloperRepository;
+import com.example.core.repository.mysql.ProjectRepository;
 import com.example.core.service.AsyncSave;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +29,8 @@ public class AsyncSaveImpl implements AsyncSave {
     ProjectRepository projectRepository;
     @Async
     public  void save (String login, Map result) {
-        Developer developer = new Developer();
-        developer.setLogin(login);
+        DeveloperEntity developerEntity = new DeveloperEntity();
+        developerEntity.setLogin(login);
         Map data = (Map) result.get("data");
         Map user = (Map) data.get("user");
         if (ObjectUtils.isEmpty(data.get("user"))) {
@@ -38,22 +38,22 @@ public class AsyncSaveImpl implements AsyncSave {
         }
         ;
         if (developerRepository.findByGitIdAndDeletedFalse((String) user.get("id")).isPresent()) {
-            developer = developerRepository.findByGitIdAndDeletedFalse((String) user.get("id")).get();
+            developerEntity = developerRepository.findByGitIdAndDeletedFalse((String) user.get("id")).get();
         }
-        developer.setName((String) user.get("name"));
-        developer.setBlo((String) user.get("bio"));
-        developer.setAvatarUrl((String) user.get("avatarUrl"));
-        developer.setGitId((String) user.get("id"));
-        developer.setDeveloperProgramMemberFlag((Boolean) user.get("isDeveloperProgramMember"));
-        developer.setBountyHunterFlag((Boolean) user.get("isBountyHunter"));
-        developer.setCampusExpertFlag((Boolean) user.get("isCampusExpert"));
+        developerEntity.setName((String) user.get("name"));
+        developerEntity.setBlo((String) user.get("bio"));
+        developerEntity.setAvatarUrl((String) user.get("avatarUrl"));
+        developerEntity.setGitId((String) user.get("id"));
+        developerEntity.setDeveloperProgramMemberFlag((Boolean) user.get("isDeveloperProgramMember"));
+        developerEntity.setBountyHunterFlag((Boolean) user.get("isBountyHunter"));
+        developerEntity.setCampusExpertFlag((Boolean) user.get("isCampusExpert"));
         Map followerMap = (Map) user.get("followers");
-        developer.setFollowersCount((Integer) followerMap.get("totalCount"));
+        developerEntity.setFollowersCount((Integer) followerMap.get("totalCount"));
         Map gistMap = (Map) user.get("gists");
-        developer.setPublicGistsCount((Integer) gistMap.get("totalCount"));
+        developerEntity.setPublicGistsCount((Integer) gistMap.get("totalCount"));
         LinkedHashMap repositoriesList = (LinkedHashMap) user.get("repositories");
-        developer.setPublicReposCount((Integer) repositoriesList.get("totalCount"));
-        String developerId = developerRepository.save(developer).getId();
+        developerEntity.setPublicReposCount((Integer) repositoriesList.get("totalCount"));
+        String developerId = developerRepository.save(developerEntity).getId();
 
         //删除关联表
         if (developerAndProjectRelationShipRepository.findAllByDeveloperIdAndDeletedFalse(developerId).isPresent()) {
@@ -67,117 +67,118 @@ public class AsyncSaveImpl implements AsyncSave {
         pullRequestReviewContributionsByRepositoryList.forEach(
                 pullRep -> {
                     LinkedHashMap rep = (LinkedHashMap) pullRep.get("repository");
-                    Project project = new Project();
-                    Optional<Project> projectOpt = projectRepository.findByGitIdAndDeletedFalse((String) rep.get("id"));
+                    DeveloperProjectEntity developerProjectEntity = new DeveloperProjectEntity();
+                    Optional<DeveloperProjectEntity> projectOpt = projectRepository.findByGitIdAndDeletedFalse((String) rep.get("id"));
                     if (projectOpt.isPresent()) {
-                        project = projectOpt.get();
+                        developerProjectEntity = projectOpt.get();
                     }
-                    project.setGitId((String) rep.get("id"));
-                    project.setUrl((String) rep.get("url"));
-                    project.setName((String) rep.get("name"));
+                    developerProjectEntity.setGitId((String) rep.get("id"));
+                    developerProjectEntity.setUrl((String) rep.get("url"));
+                    developerProjectEntity.setName((String) rep.get("name"));
                     if(!ObjectUtils.isEmpty(rep.get("primaryLanguage"))){
-                        project.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
+                        developerProjectEntity.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
                     }
                     if(!ObjectUtils.isEmpty(rep.get("commitComments"))){
-                        project.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
+                        developerProjectEntity.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
                     }
                     if(!ObjectUtils.isEmpty(rep.get("watchers"))){
-                        project.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
+                        developerProjectEntity.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
                     }
                    if(!ObjectUtils.isEmpty(rep.get("issues"))){
-                       project.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
+                       developerProjectEntity.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
                    }
-                    project.setStargazersCount((Integer) rep.get("stargazerCount"));
-                    String projectId = projectRepository.save(project).getId();
-                    Optional<DeveloperAndProjectRelationShip> developerAndProjectRelationShipOpt = developerAndProjectRelationShipRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
-                    DeveloperAndProjectRelationShip developerAndProjectRelationShip = new DeveloperAndProjectRelationShip();
+                    developerProjectEntity.setStargazersCount((Integer) rep.get("stargazerCount"));
+                    String projectId = projectRepository.save(developerProjectEntity).getId();
+                    Optional<DeveloperAndProjectRelationShipEntity> developerAndProjectRelationShipOpt = developerAndProjectRelationShipRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
+                    DeveloperAndProjectRelationShipEntity developerAndProjectRelationShipEntity = new DeveloperAndProjectRelationShipEntity();
                     if (developerAndProjectRelationShipOpt.isPresent()) {
-                        developerAndProjectRelationShip = developerAndProjectRelationShipOpt.get();
+                        developerAndProjectRelationShipEntity = developerAndProjectRelationShipOpt.get();
                     }
-                    developerAndProjectRelationShip.setDeveloperId(developerId);
-                    developerAndProjectRelationShip.setProjectId(projectId);
-                    developerAndProjectRelationShip.setPrimaryLanguage(project.getLanguage());
-                    developerAndProjectRelationShip.setHasAnyRestrictedContributions((Boolean) contributionsCollectionMap.get("hasAnyRestrictedContributions"));
-                    developerAndProjectRelationShip.setPullRequestReviewEventCount((Integer) ((Map) pullRep.get("contributions")).get("totalCount"));
-                    developerAndProjectRelationShipRepository.save(developerAndProjectRelationShip);
+                    developerAndProjectRelationShipEntity.setDeveloperId(developerId);
+                    developerAndProjectRelationShipEntity.setProjectId(projectId);
+                    developerAndProjectRelationShipEntity.setPrimaryLanguage(developerProjectEntity.getLanguage());
+                    developerAndProjectRelationShipEntity.setHasAnyRestrictedContributions((Boolean) contributionsCollectionMap.get("hasAnyRestrictedContributions"));
+                    developerAndProjectRelationShipEntity.setPullRequestReviewEventCount((Integer) ((Map) pullRep.get("contributions")).get("totalCount"));
+                    developerAndProjectRelationShipRepository.save(developerAndProjectRelationShipEntity);
                 }
         );
 
         issueContributionsByRepositoryList.forEach(
                 issueRep -> {
                     LinkedHashMap rep = (LinkedHashMap) issueRep.get("repository");
-                    Project project = new Project();
-                    Optional<Project> projectOpt = projectRepository.findByGitIdAndDeletedFalse((String) rep.get("id"));
+                    DeveloperProjectEntity developerProjectEntity = new DeveloperProjectEntity();
+                    Optional<DeveloperProjectEntity> projectOpt = projectRepository.findByGitIdAndDeletedFalse((String) rep.get("id"));
                     if (projectOpt.isPresent()) {
-                        project = projectOpt.get();
+                        developerProjectEntity = projectOpt.get();
                     }
-                    project.setGitId((String) rep.get("id"));
-                    project.setUrl((String) rep.get("url"));
-                    project.setName((String) rep.get("name"));
+                    developerProjectEntity.setGitId((String) rep.get("id"));
+                    developerProjectEntity.setUrl((String) rep.get("url"));
+                    developerProjectEntity.setName((String) rep.get("name"));
                     if(!ObjectUtils.isEmpty(rep.get("primaryLanguage"))){
-                        project.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
+                        developerProjectEntity.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
                     }
                     if(!ObjectUtils.isEmpty(rep.get("commitComments"))){
-                        project.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
+                        developerProjectEntity.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
                     }
                     if(!ObjectUtils.isEmpty(rep.get("watchers"))){
-                        project.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
+                        developerProjectEntity.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
                     }
                     if(!ObjectUtils.isEmpty(rep.get("issues"))){
-                        project.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
+                        developerProjectEntity.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
                     }
-                    project.setStargazersCount((Integer) rep.get("stargazerCount"));
-                    String projectId = projectRepository.save(project).getId();
-                    Optional<DeveloperAndProjectRelationShip> developerAndProjectRelationShipOpt = developerAndProjectRelationShipRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
-                    DeveloperAndProjectRelationShip developerAndProjectRelationShip = new DeveloperAndProjectRelationShip();
+                    developerProjectEntity.setStargazersCount((Integer) rep.get("stargazerCount"));
+                    String projectId = projectRepository.save(developerProjectEntity).getId();
+                    Optional<DeveloperAndProjectRelationShipEntity> developerAndProjectRelationShipOpt = developerAndProjectRelationShipRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
+                    DeveloperAndProjectRelationShipEntity developerAndProjectRelationShipEntity = new DeveloperAndProjectRelationShipEntity();
                     if (developerAndProjectRelationShipOpt.isPresent()) {
-                        developerAndProjectRelationShip = developerAndProjectRelationShipOpt.get();
+                        developerAndProjectRelationShipEntity = developerAndProjectRelationShipOpt.get();
                     }
-                    developerAndProjectRelationShip.setDeveloperId(developerId);
-                    developerAndProjectRelationShip.setProjectId(projectId);
-                    developerAndProjectRelationShip.setPrimaryLanguage(project.getLanguage());
-                    developerAndProjectRelationShip.setHasAnyRestrictedContributions((Boolean) contributionsCollectionMap.get("hasAnyRestrictedContributions"));
-                    developerAndProjectRelationShip.setIssuesCommentEventCount((Integer) ((Map) issueRep.get("contributions")).get("totalCount"));
-                    developerAndProjectRelationShipRepository.save(developerAndProjectRelationShip);
+                    developerAndProjectRelationShipEntity.setDeveloperId(developerId);
+                    developerAndProjectRelationShipEntity.setProjectId(projectId);
+                    developerAndProjectRelationShipEntity.setPrimaryLanguage(developerProjectEntity.getLanguage());
+                    developerAndProjectRelationShipEntity.setHasAnyRestrictedContributions((Boolean) contributionsCollectionMap.get("hasAnyRestrictedContributions"));
+                    developerAndProjectRelationShipEntity.setIssuesCommentEventCount((Integer) ((Map) issueRep.get("contributions")).get("totalCount"));
+                    developerAndProjectRelationShipRepository.save(developerAndProjectRelationShipEntity);
                 }
         );
 
         commitContributionsByRepositoryList.forEach(
                 commitRep -> {
                     LinkedHashMap rep = (LinkedHashMap) commitRep.get("repository");
-                    Project project = new Project();
-                    Optional<Project> projectOpt = projectRepository.findByGitIdAndDeletedFalse((String) rep.get("id"));
+                    DeveloperProjectEntity developerProjectEntity = new DeveloperProjectEntity();
+                    Optional<DeveloperProjectEntity> projectOpt = projectRepository.findByGitIdAndDeletedFalse((String) rep.get("id"));
                     if (projectOpt.isPresent()) {
-                        project = projectOpt.get();
+                        developerProjectEntity = projectOpt.get();
                     }
-                    project.setGitId((String) rep.get("id"));
-                    project.setUrl((String) rep.get("url"));
-                    project.setName((String) rep.get("name"));
+                    developerProjectEntity.setDescription((String) rep.get("description"));
+                    developerProjectEntity.setGitId((String) rep.get("id"));
+                    developerProjectEntity.setUrl((String) rep.get("url"));
+                    developerProjectEntity.setName((String) rep.get("name"));
                     if(!ObjectUtils.isEmpty(rep.get("primaryLanguage"))){
-                        project.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
+                        developerProjectEntity.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
                     }
                     if(!ObjectUtils.isEmpty(rep.get("commitComments"))){
-                        project.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
+                        developerProjectEntity.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
                     }
                     if(!ObjectUtils.isEmpty(rep.get("watchers"))){
-                        project.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
+                        developerProjectEntity.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
                     }
                     if(!ObjectUtils.isEmpty(rep.get("issues"))){
-                        project.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
+                        developerProjectEntity.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
                     }
-                    project.setStargazersCount((Integer) rep.get("stargazerCount"));
-                    String projectId = projectRepository.save(project).getId();
-                    Optional<DeveloperAndProjectRelationShip> developerAndProjectRelationShipOpt = developerAndProjectRelationShipRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
-                    DeveloperAndProjectRelationShip developerAndProjectRelationShip = new DeveloperAndProjectRelationShip();
+                    developerProjectEntity.setStargazersCount((Integer) rep.get("stargazerCount"));
+                    String projectId = projectRepository.save(developerProjectEntity).getId();
+                    Optional<DeveloperAndProjectRelationShipEntity> developerAndProjectRelationShipOpt = developerAndProjectRelationShipRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
+                    DeveloperAndProjectRelationShipEntity developerAndProjectRelationShipEntity = new DeveloperAndProjectRelationShipEntity();
                     if (developerAndProjectRelationShipOpt.isPresent()) {
-                        developerAndProjectRelationShip = developerAndProjectRelationShipOpt.get();
+                        developerAndProjectRelationShipEntity = developerAndProjectRelationShipOpt.get();
                     }
-                    developerAndProjectRelationShip.setDeveloperId(developerId);
-                    developerAndProjectRelationShip.setProjectId(projectId);
-                    developerAndProjectRelationShip.setPrimaryLanguage(project.getLanguage());
-                    developerAndProjectRelationShip.setHasAnyRestrictedContributions((Boolean) contributionsCollectionMap.get("hasAnyRestrictedContributions"));
-                    developerAndProjectRelationShip.setCommitCount((Integer) ((Map) commitRep.get("contributions")).get("totalCount"));
-                    developerAndProjectRelationShipRepository.save(developerAndProjectRelationShip);
+                    developerAndProjectRelationShipEntity.setDeveloperId(developerId);
+                    developerAndProjectRelationShipEntity.setProjectId(projectId);
+                    developerAndProjectRelationShipEntity.setPrimaryLanguage(developerProjectEntity.getLanguage());
+                    developerAndProjectRelationShipEntity.setHasAnyRestrictedContributions((Boolean) contributionsCollectionMap.get("hasAnyRestrictedContributions"));
+                    developerAndProjectRelationShipEntity.setCommitCount((Integer) ((Map) commitRep.get("contributions")).get("totalCount"));
+                    developerAndProjectRelationShipRepository.save(developerAndProjectRelationShipEntity);
                 }
         );
 

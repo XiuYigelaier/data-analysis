@@ -1,15 +1,18 @@
-package com.example.core.entity;
+package com.example.core.pojo.entity.mysql;
 
+import com.example.core.pojo.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Table;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
-public class Project extends BaseEntity {
+@Table(name = "project")
+public class DeveloperProjectEntity extends BaseEntity {
     @Column(name = "git_id")
     private String gitId;
     @Column(name = "name")
@@ -30,6 +33,7 @@ public class Project extends BaseEntity {
     private Integer stargazersCount;
     @Column(name = "description")
     private String description;
+    //todo
 
 
 }

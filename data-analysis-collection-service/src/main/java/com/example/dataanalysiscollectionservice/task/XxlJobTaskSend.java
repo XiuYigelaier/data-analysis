@@ -22,68 +22,73 @@ import java.util.Map;
 
 @Component
 public class XxlJobTaskSend {
-    @Value("1000")
+    @Value("500")
     String GITHUB_SEARCH_FOLLOWERS_MIN;
-    @Value("50")
+    @Value("100")
     String GITHUB_SEARCH_PER_PAGE;
     @Value("${git.token}")
     String GIT_TOKEN;
-    static Integer page = 1;
+    static Integer page = 11;
     private static final String GITHUB_SEARCH_USERS_URL = "https://api.github.com/search/users";
     private static final OkHttpClient client = new OkHttpClient();
     @Autowired
     GraphQLSearchServiceImpl graphQLSearchService;
     @Autowired
     RabbitTemplate rabbitTemplate;
+    boolean hasMoreDate = true;
 
     @XxlJob("searchDeveloperHandler")
     public void scheduledSearchUser() throws IOException {
+        while(hasMoreDate){
+            HttpUrl urlBuilder = HttpUrl.parse(GITHUB_SEARCH_USERS_URL)
+                    .newBuilder()
+                    .addQueryParameter("q", "followers:>" + GITHUB_SEARCH_FOLLOWERS_MIN)
+                    .addQueryParameter("sort", "followers")
+                    .addQueryParameter("order", "desc")
+                    .addQueryParameter("per_page", GITHUB_SEARCH_PER_PAGE)
+                    .addQueryParameter("page", String.valueOf(page))
+                    .build();
 
-        HttpUrl urlBuilder = HttpUrl.parse(GITHUB_SEARCH_USERS_URL)
-                .newBuilder()
-                .addQueryParameter("q", "followers:>" + GITHUB_SEARCH_FOLLOWERS_MIN)
-                .addQueryParameter("sort", "followers")
-                .addQueryParameter("order", "desc")
-                .addQueryParameter("per_page", GITHUB_SEARCH_PER_PAGE)
-                .addQueryParameter("page", page.toString())
-                .build();
+            Request request = new Request.Builder()
+                    .url(urlBuilder)
+                    .addHeader("Authorization", GIT_TOKEN)
+                    .build();
 
-        Request request = new Request.Builder()
-                .url(urlBuilder)
-                .addHeader("Authorization", GIT_TOKEN)
-                .build();
+             try (Response response = client.newCall(request).execute()) {
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    // 请求成功，处理响应
+                    JSONObject jsonObject = JSONObject.parseObject(responseBody);
+                    Integer totalCount =  jsonObject.getInteger("total_count");
 
-        try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful()) {
-                String responseBody = response.body().string();
-                // 请求成功，处理响应
-                JSONObject jsonObject = JSONObject.parseObject(responseBody);
-                Integer totalCount =  jsonObject.getInteger("total_count");
-                Integer pageNum = totalCount / page;
-                if (page >= pageNum) {
-                    page = 0;
-                } else {
-                    page++;
-                }
-                List<String> loginList = new ArrayList<>();
-                JSONArray itemArray =  jsonObject.getJSONArray("items");
-                itemArray.forEach(
-                        item -> {
-                            String login =((JSONObject)item).getString("login");
-                            loginList.add(login);
-                            Map searchMap = graphQLSearchService.graphqlSearch(login);
-                            Map data = (Map)searchMap.get("data");
-                            if(!ObjectUtils.isEmpty(data.get("user"))){
-                                searchMap.put("login",login);
-                                rabbitTemplate.convertAndSend("queue.calculate",searchMap);
+                    List<String> loginList = new ArrayList<>();
+                    JSONArray itemArray =  jsonObject.getJSONArray("items");
+                    if(itemArray.isEmpty()){
+                        hasMoreDate = false;
+                    }
+                    itemArray.forEach(
+                            item -> {
+                                String login =((JSONObject)item).getString("login");
+                                loginList.add(login);
+                                Map searchMap = graphQLSearchService.graphqlSearch(login);
+                                Map data = (Map)searchMap.get("data");
+                                if(!ObjectUtils.isEmpty(data.get("user"))){
+                                    searchMap.put("login",login);
+                                    rabbitTemplate.convertAndSend("queue.calculate",searchMap);
+                                }
+
                             }
+                    );
+                } else {
+                    // 请求失败，处理错误
+                    System.err.println("Request failed: " + response.code());
+                }
 
-                        }
-                );
-            } else {
-                // 请求失败，处理错误
-                System.err.println("Request failed: " + response.code());
+
+
             }
+            page++;
+             System.out.println(page +"------------------------");
 
 
         }

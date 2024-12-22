@@ -1,15 +1,14 @@
 package com.example.dataanalysissecurity.controller;
 
 
-import com.example.core.entity.ResponseModel;
+import com.example.core.pojo.base.ResponseModel;
 import com.example.dataanalysissecurity.pojo.dto.LoginDTO;
 import com.example.dataanalysissecurity.pojo.dto.RegisterDTO;
 import com.example.dataanalysissecurity.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-@CrossOrigin("*")
+@CrossOrigin
 @RequestMapping("/auth")
 @RestController
 public class UserController {

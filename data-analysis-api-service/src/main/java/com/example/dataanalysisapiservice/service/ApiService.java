@@ -2,12 +2,13 @@ package com.example.dataanalysisapiservice.service;
 
 
 
-import com.example.core.entity.TalentRank;
+import com.example.core.pojo.entity.mysql.TalentRankEntity;
+import com.example.core.pojo.vo.TalentRankVO;
 
 import java.util.List;
 
 public interface ApiService {
-    TalentRank calculateRank(String projectUser,Boolean updateFlag);
+    TalentRankVO calculateRank(String projectUser, Boolean updateFlag);
 
-     List<TalentRank> findAll();
+     List<TalentRankVO> findAll();
 }

@@ -1,6 +1,6 @@
 package com.example.dataanalysiscollectionservice.controller;
 
-import com.example.core.entity.ResponseModel;
+import com.example.core.pojo.base.ResponseModel;
 import com.example.dataanalysiscollectionservice.service.impl.GraphQLSearchServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

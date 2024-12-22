@@ -1,15 +1,14 @@
 package com.example.dataanalysissecurity.service.impl;
 
-import com.example.core.entity.LoginUser;
-import com.example.core.entity.User;
-import com.example.core.repository.UserRepository;
+import com.example.core.pojo.base.LoginUser;
+import com.example.core.pojo.entity.mysql.UserEntity;
+import com.example.core.repository.mysql.UserRepository;
 import com.example.core.utils.JWTUtils;
 import com.example.core.utils.RedisUtil;
 import com.example.dataanalysissecurity.pojo.LoginVO;
 import com.example.dataanalysissecurity.pojo.dto.LoginDTO;
 import com.example.dataanalysissecurity.pojo.dto.RegisterDTO;
 import com.example.dataanalysissecurity.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -39,15 +38,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void register(RegisterDTO registerDTO) {
-        User user = new User();
+        UserEntity userEntity = new UserEntity();
         String password = registerDTO.getPassword();
         String userName = registerDTO.getUserName();
-        user.setPassword(passwordEncoder.encode(password));
-        user.setUserName(userName);
+        userEntity.setPassword(passwordEncoder.encode(password));
+        userEntity.setUserName(userName);
         if (userRepository.findByUserNameAndDeletedFalse(userName).isPresent()) {
             throw new RuntimeException("账号不允许相同");
         }
-        userRepository.save(user);
+        userRepository.save(userEntity);
     }
 
     @Override

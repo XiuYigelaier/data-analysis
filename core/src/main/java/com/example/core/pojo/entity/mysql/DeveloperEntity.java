@@ -1,13 +1,16 @@
-package com.example.core.entity;
+package com.example.core.pojo.entity.mysql;
 
+import com.example.core.pojo.base.BaseEntity;
 import lombok.Data;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Table;
 
 @Entity
 @Data
-public class Developer extends BaseEntity {
+@Table(name = "developer")
+public class DeveloperEntity extends BaseEntity {
     @Column(name = "name")
     String name;
     @Column(name = "login")
