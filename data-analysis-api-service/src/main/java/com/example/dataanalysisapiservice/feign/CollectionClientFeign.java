@@ -16,4 +16,8 @@ public interface CollectionClientFeign {
     @GetMapping("/api/calculate/projectUser")
     public ResponseModel<?> calcuate(@RequestParam("projectUser") String projectUser);
 
+    @GetMapping("/api/calculate/pagrRank")
+    public ResponseModel<?> pageRank();
+
+
 }

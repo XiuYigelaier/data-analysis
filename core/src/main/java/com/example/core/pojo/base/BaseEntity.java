@@ -219,6 +219,6 @@ public class BaseEntity implements Serializable {
 
     public String convertCurrentOperatorName() {
         LoginUser operator = this.convertCurrentOperator();
-        return operator == null ? null : operator.getUser().getUserName();
+        return operator == null ? null : operator.getUser().getUsername();
     }
 }

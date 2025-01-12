@@ -1,6 +1,6 @@
 package com.example.core.pojo.base;
 
-import com.example.core.pojo.entity.mysql.UserEntity;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,7 +39,7 @@ public class LoginUser implements UserDetails {
 
     @Override
     public String getUsername() {
-        return userEntity.getUserName();
+        return userEntity.getUsername();
     }
 
     @Override

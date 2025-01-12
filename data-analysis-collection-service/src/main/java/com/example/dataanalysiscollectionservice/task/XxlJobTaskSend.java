@@ -3,6 +3,7 @@ package com.example.dataanalysiscollectionservice.task;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.example.dataanalysiscollectionservice.pojo.vo.DeveloperCollectionVO;
 import com.example.dataanalysiscollectionservice.service.impl.GraphQLSearchServiceImpl;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import okhttp3.HttpUrl;
@@ -39,7 +40,7 @@ public class XxlJobTaskSend {
 
     @XxlJob("searchDeveloperHandler")
     public void scheduledSearchUser() throws IOException {
-        while(hasMoreDate){
+        while (hasMoreDate) {
             HttpUrl urlBuilder = HttpUrl.parse(GITHUB_SEARCH_USERS_URL)
                     .newBuilder()
                     .addQueryParameter("q", "followers:>" + GITHUB_SEARCH_FOLLOWERS_MIN)
@@ -54,29 +55,25 @@ public class XxlJobTaskSend {
                     .addHeader("Authorization", GIT_TOKEN)
                     .build();
 
-             try (Response response = client.newCall(request).execute()) {
+            try (Response response = client.newCall(request).execute()) {
                 if (response.isSuccessful()) {
                     String responseBody = response.body().string();
                     // 请求成功，处理响应
                     JSONObject jsonObject = JSONObject.parseObject(responseBody);
-                    Integer totalCount =  jsonObject.getInteger("total_count");
+                    Integer totalCount = jsonObject.getInteger("total_count");
 
                     List<String> loginList = new ArrayList<>();
-                    JSONArray itemArray =  jsonObject.getJSONArray("items");
-                    if(itemArray.isEmpty()){
+                    JSONArray itemArray = jsonObject.getJSONArray("items");
+                    if (itemArray.isEmpty()) {
                         hasMoreDate = false;
                     }
                     itemArray.forEach(
                             item -> {
-                                String login =((JSONObject)item).getString("login");
+                                String login = ((JSONObject) item).getString("login");
                                 loginList.add(login);
-                                Map searchMap = graphQLSearchService.graphqlSearch(login);
-                                Map data = (Map)searchMap.get("data");
-                                if(!ObjectUtils.isEmpty(data.get("user"))){
-                                    searchMap.put("login",login);
-                                    rabbitTemplate.convertAndSend("queue.calculate",searchMap);
-                                }
-
+                                graphQLSearchService.graphqlSearch(login);
+                                DeveloperCollectionVO developerCollectionVO = graphQLSearchService.findByLogin(login);
+                                rabbitTemplate.convertAndSend("queue.calculate", developerCollectionVO);
                             }
                     );
                 } else {
@@ -85,10 +82,9 @@ public class XxlJobTaskSend {
                 }
 
 
-
             }
             page++;
-             System.out.println(page +"------------------------");
+            System.out.println(page + "------------------------");
 
 
         }

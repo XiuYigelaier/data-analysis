@@ -2,10 +2,10 @@ package com.example.dataanalysisapiservice.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.example.core.pojo.base.ResponseModel;
+import com.example.core.pojo.entity.mysql.TalentRankByPageRankEntity;
 import com.example.core.pojo.entity.mysql.TalentRankEntity;
 import com.example.core.pojo.entity.mysql.TalentRankProjectEntity;
-import com.example.core.pojo.vo.TalentRankProjectVO;
-import com.example.core.pojo.vo.TalentRankVO;
+import com.example.core.repository.mysql.TalentRankByPageRankRepository;
 import com.example.core.repository.mysql.TalentRankProjectRepository;
 import com.example.core.utils.RedisUtil;
 import com.example.dataanalysisapiservice.feign.CollectionClientFeign;
@@ -28,6 +28,8 @@ public class ApiServiceImpl implements ApiService {
 
     @Autowired
     RedisUtil redisUtil;
+    @Autowired
+    TalentRankByPageRankRepository talentRankByPageRankRepository;
     @Autowired
     CollectionClientFeign collectionClientFeign;
     @Autowired
@@ -102,11 +104,11 @@ public class ApiServiceImpl implements ApiService {
 
         TalentRankVO talentRankVO = new TalentRankVO();
         BeanUtils.copyProperties(talentRankEntity,talentRankVO);
+        Optional<TalentRankByPageRankEntity> talentRankByPageRankEntity=talentRankByPageRankRepository.findByGitId(talentRankVO.getGitId());
+        if(talentRankByPageRankEntity.isPresent()){
+            talentRankVO.setTalentRankByPageRank(talentRankByPageRankEntity.get().getScoreByPageRank());
+        }
         talentRankVO.setTalentRankProjectVOList(tranRankProjectVoList);
-
-
-
-
        redisUtil.addZSet("rank", talentRankVO, talentRankEntity.getTalentRank().doubleValue());
         return talentRankVO;
     }
@@ -140,6 +142,11 @@ public class ApiServiceImpl implements ApiService {
         }
         return redisUtil.getZSet("rank");
 
+    }
+
+    @Override
+    public void pageRank() {
+        collectionClientFeign.pageRank();
     }
 
 

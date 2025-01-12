@@ -1,10 +1,14 @@
 package com.example.dataanalysiscollectionservice.service.impl;
 
-import com.example.core.repository.mysql.DeveloperAndProjectRelationShipRepository;
-import com.example.core.repository.mysql.DeveloperRepository;
-import com.example.core.repository.mysql.ProjectRepository;
-import com.example.core.service.AsyncSave;
-import com.example.core.service.GraphQLSearchService;
+import com.example.dataanalysiscollectionservice.factory.DeveloperFactory;
+import com.example.dataanalysiscollectionservice.pojo.po.DeveloperAndProjectRelationShipCollectionPO;
+import com.example.dataanalysiscollectionservice.pojo.po.DeveloperCollectionPO;
+import com.example.dataanalysiscollectionservice.pojo.po.DeveloperProjectCollectionPO;
+import com.example.dataanalysiscollectionservice.pojo.vo.DeveloperCollectionVO;
+import com.example.dataanalysiscollectionservice.repository.DeveloperAndProjectRelationShipCollectionRepository;
+import com.example.dataanalysiscollectionservice.repository.DeveloperCollectionRepository;
+import com.example.dataanalysiscollectionservice.repository.DeveloperProjectCollectionRepository;
+import com.example.dataanalysiscollectionservice.service.GraphQLSearchService;
 
 
 import okhttp3.OkHttpClient;
@@ -14,7 +18,6 @@ import org.mountcloud.graphql.request.query.GraphqlQuery;
 
 import org.mountcloud.graphql.request.result.ResultAttributtes;
 import org.mountcloud.graphql.response.GraphqlResponse;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -32,33 +35,27 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
     String GIT_TOKEN;
     @Value("${git.url}")
     String GIT_URL;
-    @Value("1000")
-    String GITHUB_SEARCH_FOLLOWERS_MIN;
-    @Value("50")
-    String GITHUB_SEARCH_PER_PAGE;
-    private static final String GITHUB_SEARCH_USERS_URL = "https://api.github.com/search/users";
-
-    private static final String FILE_PATH = "D:\\javaProject1\\DataAnalysis\\data-analysis-collection-service\\src\\main\\resources\\query.graphql";
 
     private static final OkHttpClient client = new OkHttpClient();
+
     @Autowired
-    AsyncSave asyncSave;
+    DeveloperCollectionRepository developerCollectionRepository;
     @Autowired
-    DeveloperRepository developerRepository;
+    DeveloperProjectCollectionRepository developerProjectCollectionRepository;
     @Autowired
-    ProjectRepository projectRepository;
+    DeveloperAndProjectRelationShipCollectionRepository developerAndProjectRelationShipCollectionRepository;
     @Autowired
-    DeveloperAndProjectRelationShipRepository developerAndProjectRelationShipRepository;
+    DeveloperFactory developerFactory;
 
     @Transactional
     @Override
-    public Map graphqlSearch(String developerName) {
+    public void graphqlSearch(String login) {
         GraphqlClient graphqlClient = GraphqlClient.buildGraphqlClient(GIT_URL);
         Map<String, String> httpHeaders = new HashMap<>();
         httpHeaders.put("Authorization", GIT_TOKEN);
         graphqlClient.setHttpHeaders(httpHeaders);
         GraphqlQuery query = new DefaultGraphqlQuery("user");
-        query.addParameter("login", developerName);
+        query.addParameter("login", login);
         query.addResultAttributes("id", "name", "avatarUrl", "location", "bio", "isBountyHunter", "isCampusExpert", "isDeveloperProgramMember", "company", "pronouns");
         ResultAttributtes contributionsCollection = new ResultAttributtes("contributionsCollection");
         contributionsCollection.addResultAttributes("hasAnyRestrictedContributions", "totalCommitContributions", "totalIssueContributions", "totalPullRequestContributions", "totalRepositoriesWithContributedCommits");
@@ -100,8 +97,8 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
 
         contributionsCollection.addResultAttributes(commitContributionsByRepository);
         ResultAttributtes repositories = new ResultAttributtes("repositories(first: 20, orderBy: { field: STARGAZERS, direction: DESC })");
-        ResultAttributtes nodes =  new ResultAttributtes("nodes");
-        nodes.addResultAttributes("name","url","stargazerCount");
+        ResultAttributtes nodes = new ResultAttributtes("nodes");
+        nodes.addResultAttributes("name", "url", "stargazerCount");
         repositories.addResultAttributes(nodes);
         repositories.addResultAttributes("totalCount");
         query.addResultAttributes(repositories);
@@ -119,18 +116,12 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
         nodes.addResultAttributes(description);
 
 
-
         ResultAttributtes following = new ResultAttributtes("following(first:100)");
         following.addResultAttributes("totalCount");
         ResultAttributtes followingNode = new ResultAttributtes("nodes");
-        followingNode.addResultAttributes("login","id","avatarUrl");
+        followingNode.addResultAttributes("login", "id", "avatarUrl");
         following.addResultAttributes(followingNode);
         query.addResultAttributes(following);
-
-//        pullRequestReviewContributionsByRepository.addResultAttributes(description);
-//        issueContributionsByRepository.addResultAttributes(description);
-//        commitContributionsByRepository.addResultAttributes(description);
-
 
 
         Map result = null;
@@ -141,47 +132,193 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
         } catch (IOException e) {
             throw new RuntimeException("git请求失败:" + result.get("errors"));
         }
-        if(ObjectUtils.isEmpty(result)){
-            throw new  RuntimeException("无result：网络错误");
+        if (ObjectUtils.isEmpty(result)) {
+            throw new RuntimeException("无result：网络错误");
         }
-//        if(ObjectUtils.isEmpty(result.get("user"))){
-//            //无法访问这个用户
-//            return  null;
-//        }
-        Map data = (Map)result.get("data");
-       if(!ObjectUtils.isEmpty(data.get("user"))){
-           asyncSave.save(developerName, result);
-       }
-        return result;
+
+        Map data = (Map) result.get("data");
+        if (!ObjectUtils.isEmpty(data.get("user"))) {
+            save(login, result);
+        }
 
     }
 
-//    @XxlJob("searchDeveloperHandler")
-//    public void scheduledSearchUser() throws IOException {
-//
-//        HttpUrl urlBuilder = HttpUrl.parse(GITHUB_SEARCH_USERS_URL)
-//                .newBuilder()
-//                .addQueryParameter("q", "followers:>" + GITHUB_SEARCH_FOLLOWERS_MIN)
-//                .addQueryParameter("sort", "followers")
-//                .addQueryParameter("order", "desc")
-//                .addQueryParameter("per_page", GITHUB_SEARCH_PER_PAGE)
-//                .build();
-//
-//        Request request = new Request.Builder()
-//                .url(urlBuilder)
-//                .addHeader("Authorization", GIT_TOKEN)
-//                .build();
-//
-//          try (Response response = client.newCall(request).execute()) {
-//            if (response.isSuccessful()) {
-//                // 请求成功，处理响应
-//                System.out.println(response.body().string());
-//            } else {
-//                // 请求失败，处理错误
-//                System.err.println("Request failed: " + response.code());
-//            }
-//        }
-//    }
+    public void save(String login, Map result) {
+        DeveloperCollectionPO developerEntity = new DeveloperCollectionPO();
+        developerEntity.setLogin(login);
+        Map data = (Map) result.get("data");
+        Map user = (Map) data.get("user");
+        if (ObjectUtils.isEmpty(data.get("user"))) {
+            throw new RuntimeException("无此用户信息" + login + result.get("errors"));
+        }
+        ;
+        if (developerCollectionRepository.findByGitIdAndDeletedFalse((String) user.get("id")).isPresent()) {
+            developerEntity = developerCollectionRepository.findByGitIdAndDeletedFalse((String) user.get("id")).get();
+        }
+        developerEntity.setName((String) user.get("name"));
+        developerEntity.setBlo((String) user.get("bio"));
+        developerEntity.setAvatarUrl((String) user.get("avatarUrl"));
+        developerEntity.setGitId((String) user.get("id"));
+        developerEntity.setLocation((String)user.get("location"));
+        developerEntity.setCompany((String)user.get("company"));
+        developerEntity.setPronouns((String)user.get("pronouns"));
+        developerEntity.setDeveloperProgramMemberFlag((Boolean) user.get("isDeveloperProgramMember"));
+        developerEntity.setBountyHunterFlag((Boolean) user.get("isBountyHunter"));
+        developerEntity.setCampusExpertFlag((Boolean) user.get("isCampusExpert"));
+        Map followerMap = (Map) user.get("followers");
+        developerEntity.setFollowersCount((Integer) followerMap.get("totalCount"));
+        Map gistMap = (Map) user.get("gists");
+        developerEntity.setPublicGistsCount((Integer) gistMap.get("totalCount"));
+        LinkedHashMap repositoriesList = (LinkedHashMap) user.get("repositories");
+        developerEntity.setPublicReposCount((Integer) repositoriesList.get("totalCount"));
+
+        LinkedHashMap contributionsCollectionMap = (LinkedHashMap) user.get("contributionsCollection");
+        ArrayList<LinkedHashMap> pullRequestReviewContributionsByRepositoryList = (ArrayList<LinkedHashMap>) contributionsCollectionMap.get("pullRequestReviewContributionsByRepository");
+        ArrayList<LinkedHashMap> issueContributionsByRepositoryList = (ArrayList<LinkedHashMap>) contributionsCollectionMap.get("issueContributionsByRepository");
+        ArrayList<LinkedHashMap> commitContributionsByRepositoryList = (ArrayList<LinkedHashMap>) contributionsCollectionMap.get("commitContributionsByRepository");
+        developerEntity.setTotalCommitContributions((Integer) contributionsCollectionMap.get("totalCommitContributions"));
+        developerEntity.setTotalRepositoriesWithCommits((Integer) contributionsCollectionMap.get("totalRepositoriesWithCommits"));
+        developerEntity.setTotalIssueContributions((Integer) contributionsCollectionMap.get("totalIssueContributions"));
+        developerEntity.setTotalPullRequestContributions((Integer) contributionsCollectionMap.get("totalPullRequestContributions"));
+        Map followingMap = (Map) user.get("following");
+        String developerId = developerCollectionRepository.save(developerEntity).getId();
+
+        //删除关联表
+        developerAndProjectRelationShipCollectionRepository.deleteAllByDeveloperIdAndDeletedFalse(developerId);
 
 
+        pullRequestReviewContributionsByRepositoryList.forEach(
+                pullRep -> {
+                    LinkedHashMap rep = (LinkedHashMap) pullRep.get("repository");
+                    DeveloperProjectCollectionPO developerProjectCollectionPO = new DeveloperProjectCollectionPO();
+                    Optional<DeveloperProjectCollectionPO> projectOpt = developerProjectCollectionRepository.findByGitIdAndDeletedFalse((String) rep.get("id"));
+                    if (projectOpt.isPresent()) {
+                        developerProjectCollectionPO = projectOpt.get();
+                    }
+                    developerProjectCollectionPO.setGitId((String) rep.get("id"));
+                    developerProjectCollectionPO.setUrl((String) rep.get("url"));
+                    developerProjectCollectionPO.setName((String) rep.get("name"));
+                    if (!ObjectUtils.isEmpty(rep.get("primaryLanguage"))) {
+                        developerProjectCollectionPO.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
+                    }
+                    if (!ObjectUtils.isEmpty(rep.get("commitComments"))) {
+                        developerProjectCollectionPO.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
+                    }
+                    if (!ObjectUtils.isEmpty(rep.get("watchers"))) {
+                        developerProjectCollectionPO.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
+                    }
+                    if (!ObjectUtils.isEmpty(rep.get("issues"))) {
+                        developerProjectCollectionPO.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
+                    }
+                    developerProjectCollectionPO.setStargazersCount((Integer) rep.get("stargazerCount"));
+                    developerProjectCollectionPO.setDescription((String) rep.get("description"));
+                    String projectId = developerProjectCollectionRepository.save(developerProjectCollectionPO).getId();
+                    Optional<DeveloperAndProjectRelationShipCollectionPO> developerAndProjectRelationShipOpt = developerAndProjectRelationShipCollectionRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
+                    DeveloperAndProjectRelationShipCollectionPO developerAndProjectRelationShipCollectionPO = new DeveloperAndProjectRelationShipCollectionPO();
+                    if (developerAndProjectRelationShipOpt.isPresent()) {
+                        developerAndProjectRelationShipCollectionPO = developerAndProjectRelationShipOpt.get();
+                    }
+                    developerAndProjectRelationShipCollectionPO.setDeveloperId(developerId);
+                    developerAndProjectRelationShipCollectionPO.setProjectId(projectId);
+                    developerAndProjectRelationShipCollectionPO.setPrimaryLanguage(developerProjectCollectionPO.getLanguage());
+                    developerAndProjectRelationShipCollectionPO.setHasAnyRestrictedContributions((Boolean) contributionsCollectionMap.get("hasAnyRestrictedContributions"));
+                    developerAndProjectRelationShipCollectionPO.setPullRequestReviewEventCount((Integer) ((Map) pullRep.get("contributions")).get("totalCount"));
+                    developerAndProjectRelationShipCollectionRepository.save(developerAndProjectRelationShipCollectionPO);
+                }
+        );
+
+        issueContributionsByRepositoryList.forEach(
+                issueRep -> {
+                    LinkedHashMap rep = (LinkedHashMap) issueRep.get("repository");
+                    DeveloperProjectCollectionPO developerProjectCollectionPO = new DeveloperProjectCollectionPO();
+                    Optional<DeveloperProjectCollectionPO> projectOpt = developerProjectCollectionRepository.findByGitIdAndDeletedFalse((String) rep.get("id"));
+                    if (projectOpt.isPresent()) {
+                        developerProjectCollectionPO = projectOpt.get();
+                    }
+                    developerProjectCollectionPO.setGitId((String) rep.get("id"));
+                    developerProjectCollectionPO.setUrl((String) rep.get("url"));
+                    developerProjectCollectionPO.setName((String) rep.get("name"));
+                    if (!ObjectUtils.isEmpty(rep.get("primaryLanguage"))) {
+                        developerProjectCollectionPO.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
+                    }
+                    if (!ObjectUtils.isEmpty(rep.get("commitComments"))) {
+                        developerProjectCollectionPO.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
+                    }
+                    if (!ObjectUtils.isEmpty(rep.get("watchers"))) {
+                        developerProjectCollectionPO.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
+                    }
+                    if (!ObjectUtils.isEmpty(rep.get("issues"))) {
+                        developerProjectCollectionPO.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
+                    }
+                    developerProjectCollectionPO.setStargazersCount((Integer) rep.get("stargazerCount"));
+                    developerProjectCollectionPO.setDescription((String) rep.get("description"));
+                    String projectId = developerProjectCollectionRepository.save(developerProjectCollectionPO).getId();
+                    Optional<DeveloperAndProjectRelationShipCollectionPO> developerAndProjectRelationShipOpt = developerAndProjectRelationShipCollectionRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
+                    DeveloperAndProjectRelationShipCollectionPO developerAndProjectRelationShipCollectionPO = new DeveloperAndProjectRelationShipCollectionPO();
+                    if (developerAndProjectRelationShipOpt.isPresent()) {
+                        developerAndProjectRelationShipCollectionPO = developerAndProjectRelationShipOpt.get();
+                    }
+                    developerAndProjectRelationShipCollectionPO.setDeveloperId(developerId);
+                    developerAndProjectRelationShipCollectionPO.setProjectId(projectId);
+                    developerAndProjectRelationShipCollectionPO.setPrimaryLanguage(developerProjectCollectionPO.getLanguage());
+                    developerAndProjectRelationShipCollectionPO.setHasAnyRestrictedContributions((Boolean) contributionsCollectionMap.get("hasAnyRestrictedContributions"));
+                    developerAndProjectRelationShipCollectionPO.setIssuesCommentEventCount((Integer) ((Map) issueRep.get("contributions")).get("totalCount"));
+                    developerAndProjectRelationShipCollectionRepository.save(developerAndProjectRelationShipCollectionPO);
+                }
+        );
+
+        commitContributionsByRepositoryList.forEach(
+                commitRep -> {
+                    LinkedHashMap rep = (LinkedHashMap) commitRep.get("repository");
+                    DeveloperProjectCollectionPO developerProjectCollectionPO = new DeveloperProjectCollectionPO();
+                    Optional<DeveloperProjectCollectionPO> projectOpt = developerProjectCollectionRepository.findByGitIdAndDeletedFalse((String) rep.get("id"));
+                    if (projectOpt.isPresent()) {
+                        developerProjectCollectionPO = projectOpt.get();
+                    }
+                    developerProjectCollectionPO.setDescription((String) rep.get("description"));
+                    developerProjectCollectionPO.setGitId((String) rep.get("id"));
+                    developerProjectCollectionPO.setUrl((String) rep.get("url"));
+                    developerProjectCollectionPO.setName((String) rep.get("name"));
+                    if (!ObjectUtils.isEmpty(rep.get("primaryLanguage"))) {
+                        developerProjectCollectionPO.setLanguage((String) ((Map) rep.get("primaryLanguage")).get("name"));
+                    }
+                    if (!ObjectUtils.isEmpty(rep.get("commitComments"))) {
+                        developerProjectCollectionPO.setCommentsCount((Integer) ((Map) rep.get("commitComments")).get("totalCount"));
+                    }
+                    if (!ObjectUtils.isEmpty(rep.get("watchers"))) {
+                        developerProjectCollectionPO.setWatchersCount((Integer) ((Map) rep.get("watchers")).get("totalCount"));
+                    }
+                    if (!ObjectUtils.isEmpty(rep.get("issues"))) {
+                        developerProjectCollectionPO.setIssuesCount((Integer) ((Map) rep.get("issues")).get("totalCount"));
+                    }
+                    developerProjectCollectionPO.setStargazersCount((Integer) rep.get("stargazerCount"));
+                    developerProjectCollectionPO.setDescription((String) rep.get("description"));
+                    String projectId = developerProjectCollectionRepository.save(developerProjectCollectionPO).getId();
+                    Optional<DeveloperAndProjectRelationShipCollectionPO> developerAndProjectRelationShipOpt = developerAndProjectRelationShipCollectionRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
+                    DeveloperAndProjectRelationShipCollectionPO developerAndProjectRelationShipCollectionPO = new DeveloperAndProjectRelationShipCollectionPO();
+                    if (developerAndProjectRelationShipOpt.isPresent()) {
+                        developerAndProjectRelationShipCollectionPO = developerAndProjectRelationShipOpt.get();
+                    }
+                    developerAndProjectRelationShipCollectionPO.setDeveloperId(developerId);
+                    developerAndProjectRelationShipCollectionPO.setProjectId(projectId);
+                    developerAndProjectRelationShipCollectionPO.setPrimaryLanguage(developerProjectCollectionPO.getLanguage());
+                    developerAndProjectRelationShipCollectionPO.setHasAnyRestrictedContributions((Boolean) contributionsCollectionMap.get("hasAnyRestrictedContributions"));
+                    developerAndProjectRelationShipCollectionPO.setCommitCount((Integer) ((Map) commitRep.get("contributions")).get("totalCount"));
+                    developerAndProjectRelationShipCollectionRepository.save(developerAndProjectRelationShipCollectionPO);
+                }
+        );
+
+    }
+
+    public List<DeveloperCollectionVO> findAll() {
+        List<DeveloperCollectionPO> developerCollectionPOS = developerCollectionRepository.findAllByDeletedFalse();
+        return developerFactory.toDeveloperCollectionVOList(developerCollectionPOS);
+    }
+
+
+    public DeveloperCollectionVO findByLogin(String login) {
+        graphqlSearch(login);
+        return developerFactory.toDeveloperCollectionVO(login);
+
+    }
 }

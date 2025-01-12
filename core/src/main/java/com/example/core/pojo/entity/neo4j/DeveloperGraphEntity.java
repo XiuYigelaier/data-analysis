@@ -5,6 +5,7 @@ import com.example.core.pojo.base.BaseEntity;
 import lombok.Data;
 import org.springframework.data.neo4j.core.schema.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -18,6 +19,8 @@ public class DeveloperGraphEntity  {
     private String avatarUrl;
     @Property
     private String login;
+    @Property
+    private BigDecimal score;
 
     @Relationship(type = "FOLLOWS", direction = Relationship.Direction.OUTGOING)
     private List<DeveloperGraphEntity> followee;
@@ -30,23 +33,12 @@ public class DeveloperGraphEntity  {
         this.developerId = developerId;
         this.avatarUrl = avatarUrl;
         this.login = login;
+        this.score = BigDecimal.ZERO;
+
     }
 
-    public String getLogin() {
-        return login;
-    }
 
-    public void setLogin(String login) {
-        this.login = login;
-    }
 
-    public List<DeveloperGraphEntity> getFollowee() {
-        return followee;
-    }
-
-    public void setFollowee(List<DeveloperGraphEntity> followee) {
-        this.followee = followee;
-    }
 
 
 }

@@ -37,4 +37,16 @@ public class ApiController {
             return ResponseModel.failure("获取失败" +  e.getMessage());
         }
     }
+
+    @GetMapping("/pageRank")
+    public ResponseModel<?> pageRank(){
+        try{
+            apiService.pageRank();
+            return ResponseModel.success("pageRank成功");
+        } catch (Exception e){
+            return ResponseModel.failure("获取失败" +  e.getMessage());
+        }
+    }
+
+
 }

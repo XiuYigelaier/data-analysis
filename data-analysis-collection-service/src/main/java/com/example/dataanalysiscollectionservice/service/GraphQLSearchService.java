@@ -1,7 +1,5 @@
-package com.example.core.service;
-
-import java.util.Map;
+package com.example.dataanalysiscollectionservice.service;
 
 public interface GraphQLSearchService {
-    public Map graphqlSearch(String developerName);
+    public void graphqlSearch(String developerName);
 }

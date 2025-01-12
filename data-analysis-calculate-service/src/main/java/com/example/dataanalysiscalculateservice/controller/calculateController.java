@@ -2,9 +2,12 @@ package com.example.dataanalysiscalculateservice.controller;
 
 import com.example.core.pojo.base.ResponseModel;
 import com.example.dataanalysiscalculateservice.config.XFConfig;
+import com.example.dataanalysiscalculateservice.pojo.vo.TalentRankVO;
 import com.example.dataanalysiscalculateservice.service.CalculateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/calculate")
@@ -15,14 +18,48 @@ public class calculateController {
     @Autowired
     XFConfig xfConfig;
 
-    @GetMapping("/projectUser")
-    public ResponseModel<?> calcuate(@RequestParam String projectUser) {
+    @GetMapping("/calculateAll")
+    public ResponseModel<?> calculateAll() {
         try {
-            return ResponseModel.success( calculateService.calculate(projectUser));
+            calculateService.calculateAll();
+            return ResponseModel.success("计算成功");
         } catch (Exception e) {
             return ResponseModel.failure("计算失败" +  e.getMessage());
         }
     }
+
+
+    @GetMapping("/calculateByLogin")
+    public ResponseModel<?> calculateByLogin(String login ) {
+        try {
+            calculateService.calculateByLogin(login);
+            return ResponseModel.success("计算成功");
+        } catch (Exception e) {
+            return ResponseModel.failure("计算失败" +  e.getMessage());
+        }
+    }
+
+    @GetMapping("/findAll")
+    public ResponseModel<?> findAll( ) {
+        try {
+
+            return ResponseModel.success( calculateService.findAll());
+        } catch (Exception e) {
+            return ResponseModel.failure("计算失败" +  e.getMessage());
+        }
+    }
+    @GetMapping("/findByLogin")
+    public ResponseModel<?> findByLogin( String login ) {
+        try {
+
+            return ResponseModel.success(calculateService.findByLogin(login));
+        } catch (Exception e) {
+            return ResponseModel.failure("计算失败" +  e.getMessage());
+        }
+    }
+
+
+
 
 //    @GetMapping("/ai")
 //    public ResponseModel<?> ai(String text){

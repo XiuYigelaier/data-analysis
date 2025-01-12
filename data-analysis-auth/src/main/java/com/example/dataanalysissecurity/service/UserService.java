@@ -1,13 +1,15 @@
 package com.example.dataanalysissecurity.service;
 
-import com.example.dataanalysissecurity.pojo.LoginVO;
+import com.example.dataanalysissecurity.pojo.vo.LoginVO;
+import com.example.dataanalysissecurity.pojo.vo.UserVO;
 import com.example.dataanalysissecurity.pojo.dto.LoginDTO;
 import com.example.dataanalysissecurity.pojo.dto.RegisterDTO;
-import org.springframework.stereotype.Service;
 
 public interface UserService {
 
-    public void register(RegisterDTO registerDTO);
+    void register(RegisterDTO registerDTO);
 
-    public LoginVO login(LoginDTO loginDTO) ;
+    LoginVO login(LoginDTO loginDTO) ;
+
+    UserVO findUserInfo(String token) throws Exception;
 }

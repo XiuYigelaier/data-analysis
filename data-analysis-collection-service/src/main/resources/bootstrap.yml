@@ -15,7 +15,9 @@ spring:
       uri: http://localhost:8762
       # 指定config server在服务发现中的serviceId，默认为：configserver
       name: config
-
+git:
+  token: Bearer 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
+  url: https://api.github.com/graphql
 ---
 spring:
   config:

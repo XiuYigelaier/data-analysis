@@ -2,9 +2,6 @@
 server:
   port: 9001
 
-git:
-  token: Bearer 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
-  url: https://api.github.com/graphql
 spring:
   application:
     name: data-analysis-collection-service

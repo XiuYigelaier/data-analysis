@@ -14,7 +14,7 @@ spring:
       enabled: true
       server:
         native:
-          search-locations: file:D:/javaProject/comp/config/analysis-config
+          search-locations: file:\Users\xiuyi\Documents\project\DATA-ANALYSIS\config
     discovery:
       client:
         health-indicator:

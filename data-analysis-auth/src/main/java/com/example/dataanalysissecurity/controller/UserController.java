@@ -2,6 +2,7 @@ package com.example.dataanalysissecurity.controller;
 
 
 import com.example.core.pojo.base.ResponseModel;
+import com.example.dataanalysissecurity.pojo.vo.UserVO;
 import com.example.dataanalysissecurity.pojo.dto.LoginDTO;
 import com.example.dataanalysissecurity.pojo.dto.RegisterDTO;
 import com.example.dataanalysissecurity.service.UserService;
@@ -33,7 +34,7 @@ public class UserController {
         }
 
     }
-    @PutMapping("/register")
+    @PostMapping("/register")
     public ResponseModel<?> register(@RequestBody RegisterDTO registerDTO) {
         try {
             userService.register(registerDTO);
@@ -41,6 +42,18 @@ public class UserController {
         } catch (Exception e) {
             LOG.error("注册失败" + e.toString(), e);
             return ResponseModel.failure(e,"注册失败");
+
+        }
+
+
+    }
+    @GetMapping("/findUserInfo")
+    public ResponseModel<UserVO> findUserInfo(@RequestParam String token) {
+        try {
+            return ResponseModel.success(userService.findUserInfo(token));
+        } catch (Exception e) {
+            LOG.error("获取用户信息失败" + e.toString(), e);
+            return ResponseModel.failure(e,"获取用户信息失败");
 
         }
 

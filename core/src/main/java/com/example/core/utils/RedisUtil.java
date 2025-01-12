@@ -6,7 +6,6 @@ package com.example.core.utils;
 //
 
 
-import com.example.core.pojo.vo.TalentRankVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
@@ -16,7 +15,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -82,23 +80,23 @@ public class RedisUtil {
         SetOperations<String, Object> set = this.redisTemplate.opsForSet();
         set.add(key, new Object[]{value});
     }
-
-    public void addZSet(String key, Object val, Double rank){
-        redisTemplate.opsForZSet().add(key,val,rank);
-    }
-    public void removeZSet(String key, String login){
-        Set<ZSetOperations.TypedTuple<TalentRankVO>> zset = redisTemplate.opsForZSet().rangeWithScores(key, 0, -1);
-
-        if (zset != null) {
-            for (ZSetOperations.TypedTuple<TalentRankVO> tuple : zset) {
-                TalentRankVO vo = tuple.getValue();
-                if (vo != null && login.equals(vo.getLogin())) {
-                    redisTemplate.opsForZSet().remove(key, vo);
-                    break; // 找到并删除后可以退出循环
-                }
-            }
-        }
-    }
+//
+//    public void addZSet(String key, Object val, Double rank){
+//        redisTemplate.opsForZSet().add(key,val,rank);
+//    }
+//    public void removeZSet(String key, String login){
+//        Set<ZSetOperations.TypedTuple<TalentRankVO>> zset = redisTemplate.opsForZSet().rangeWithScores(key, 0, -1);
+//
+//        if (zset != null) {
+//            for (ZSetOperations.TypedTuple<TalentRankVO> tuple : zset) {
+//                TalentRankVO vo = tuple.getValue();
+//                if (vo != null && login.equals(vo.getLogin())) {
+//                    redisTemplate.opsForZSet().remove(key, vo);
+//                    break; // 找到并删除后可以退出循环
+//                }
+//            }
+//        }
+//    }
 
     public <T> List<T> getZSet(String key){
         Set<ZSetOperations.TypedTuple<T>> sortedSet = redisTemplate.opsForZSet().reverseRangeByScoreWithScores(key, 0, Double.MAX_VALUE);
