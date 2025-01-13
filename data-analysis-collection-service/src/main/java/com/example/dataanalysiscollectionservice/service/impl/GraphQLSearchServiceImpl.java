@@ -156,7 +156,7 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
             developerEntity = developerCollectionRepository.findByGitIdAndDeletedFalse((String) user.get("id")).get();
         }
         developerEntity.setName((String) user.get("name"));
-        developerEntity.setBlo((String) user.get("bio"));
+        developerEntity.setBio((String) user.get("bio"));
         developerEntity.setAvatarUrl((String) user.get("avatarUrl"));
         developerEntity.setGitId((String) user.get("id"));
         developerEntity.setLocation((String)user.get("location"));

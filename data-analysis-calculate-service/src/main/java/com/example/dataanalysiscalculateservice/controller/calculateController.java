@@ -66,7 +66,7 @@ public class calculateController {
 //        try {
 //            SecurityContextHolder ctx   = new SecurityContextHolder();
 //            BigModelNew bigModelNew = new BigModelNew(ctx.toString(),true);
-//            return ResponseModel.success( bigModelNew.requestModel("通过以下数据分析此github开发者的所在的地区并给出置信度,login并不是无用信息你可以通过他是哪种语言来判断开发者所在地区:"+"login=Pointedstick,location=null,blog=Husband, father of two, independent OSS dev. @vuejs, @vitejs, @rolldown, and more. Connoisseur of sushi.,company=上海景荣公司，twitterUsername=youyuxi"));
+//            return ResponseModel.success( bigModelNew.requestModel("通过以下数据分析此github开发者的所在的地区并给出置信度,login并不是无用信息你可以通过他是哪种语言来判断开发者所在地区:"+"login=Pointedstick,location=null,biog=Husband, father of two, independent OSS dev. @vuejs, @vitejs, @rolldown, and more. Connoisseur of sushi.,company=上海景荣公司，twitterUsername=youyuxi"));
 //        } catch (Exception e) {
 //            return ResponseModel.failure("计算失败" +  e);
 //        }

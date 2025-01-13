@@ -31,4 +31,5 @@
     SCRIPTING_LANGUAGE("Scripting Language", "A programming language that supports scripts, which are small pieces of source code that are usually interpreted or run by another program rather than being compiled into machine code.");
 
 我将给你项目名称和他的一些介绍 你需要把它归为这几类中的一个，并返回给我他的枚举值
+  不需要提供推测的理由，直接返回格式即可。请迅速给出结果，返回的格式例如为：```json {"category":"FRONTEND_APPLICATION"}```，并在里面填写您推断出的值。
 返回格式举例：  FRONTEND_APPLICATION

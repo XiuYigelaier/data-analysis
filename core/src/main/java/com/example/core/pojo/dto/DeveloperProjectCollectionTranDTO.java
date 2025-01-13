@@ -1,10 +1,12 @@
-package com.example.dataanalysiscalculateservice.pojo.dto;
+package com.example.core.pojo.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class DeveloperProjectCollectionDTO {
+public class DeveloperProjectCollectionTranDTO implements Serializable {
     @ApiModelProperty(value = "开发者id", required = true, example = "")
     private String developerId;
     @ApiModelProperty(value = "项目id", required = true, example = "")

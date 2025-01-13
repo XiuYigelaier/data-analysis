@@ -1,6 +1,6 @@
 package com.example.dataanalysiscalculateservice.pojo.po;
 
-import com.example.core.enums.ProjectClassificationEnum;
+import com.example.dataanalysiscalculateservice.enums.ProjectClassificationEnum;
 import com.example.core.pojo.base.BaseEntity;
 import lombok.Data;
 

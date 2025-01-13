@@ -12,11 +12,11 @@ import javax.persistence.Table;
 @Table(name = "collect_developer_repository_collection")
 public class DeveloperRepositoryCollectionPO extends BaseEntity {
     @Column(name = "developer_id",columnDefinition = "varchar(255) comment '开发者id'")
-    String developerId;
+    private String developerId;
     @Column(name = "repository_name",columnDefinition = "varchar(255) comment '仓库名'")
-    String repositoryName;
+    private String repositoryName;
     @Column(name = "url",columnDefinition = "varchar(255) comment '仓库地址")
-    String url;
+    private String url;
     @Column(name = "star_count",columnDefinition = "varchar(255) comment '星标数量'")
-    Integer starCount;
+    private Integer starCount;
 }

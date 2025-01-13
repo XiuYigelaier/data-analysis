@@ -1,12 +1,13 @@
-package com.example.dataanalysiscalculateservice.pojo.dto;
+package com.example.core.pojo.dto;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class DeveloperCollectionDTO {
+public class DeveloperCollectionTranDTO implements Serializable {
     String name;
     String login;
     String gitId;
@@ -17,7 +18,7 @@ public class DeveloperCollectionDTO {
     Boolean developerProgramMemberFlag;
     Boolean campusExpertFlag;
     Boolean bountyHunterFlag;
-    String blo;
+    String bio;
     String location;
     String company;
     String pronouns;
@@ -26,9 +27,9 @@ public class DeveloperCollectionDTO {
     Integer totalPullRequestContributions;
     Integer totalRepositoriesWithCommits;
     Boolean hasAnyRestrictedContributions;
-    List<DeveloperProjectCollectionDTO> developerProjectCollectionList;
+    List<DeveloperProjectCollectionTranDTO> developerProjectCollectionList;
 
-    public DeveloperCollectionDTO() {
+    public DeveloperCollectionTranDTO() {
         developerProjectCollectionList = new ArrayList<>();
     }
 

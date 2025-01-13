@@ -1,4 +1,4 @@
-package com.example.core.enums;
+package com.example.dataanalysiscalculateservice.enums;
 
 public enum ProjectClassificationEnum {
     // 框架（例如React, Vue这种）
@@ -46,4 +46,15 @@ public enum ProjectClassificationEnum {
     public String getDescription() {
         return description;
     }
+
+    public static ProjectClassificationEnum fromString(String projectClassificationEnum) {
+        try {
+            return ProjectClassificationEnum.valueOf(projectClassificationEnum.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // 处理无效输入，可以返回null或者抛出一个自定义异常
+            // 这里我们简单地返回null作为示例
+            return null;
+        }
+    }
+
 }

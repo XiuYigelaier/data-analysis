@@ -51,6 +51,7 @@ public class TokenFilter implements Filter {
                     httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     return;
                 }
+
                 String redisKey = "login:" + userId;
                 LoginUser user = (LoginUser) redisUtil.get(redisKey);
                 if (ObjectUtils.isEmpty(user)) {

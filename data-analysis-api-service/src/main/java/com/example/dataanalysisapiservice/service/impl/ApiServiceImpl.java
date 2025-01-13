@@ -75,7 +75,7 @@ public class ApiServiceImpl implements ApiService {
         talentRankEntity.setTalentRank(BigDecimal.valueOf((Double) data.get("rank")));
         talentRankEntity.setName((String) data.get("name"));
         talentRankEntity.setGitId((String) data.get("gitId"));
-        talentRankEntity.setBlo((String) data.get("blo"));
+        talentRankEntity.setbio((String) data.get("bio"));
         talentRankEntity.setLocation((String) data.get("location"));
         talentRankEntity.setAvatarUrl((String) data.get("avatarUrl"));
         talentRankEntity.setAreas((String)data.get("areas"));

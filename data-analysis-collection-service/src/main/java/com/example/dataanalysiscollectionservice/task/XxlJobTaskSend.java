@@ -3,6 +3,9 @@ package com.example.dataanalysiscollectionservice.task;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSON;
+import com.example.core.pojo.dto.DeveloperCollectionTranDTO;
+import com.example.core.pojo.dto.DeveloperProjectCollectionTranDTO;
 import com.example.dataanalysiscollectionservice.pojo.vo.DeveloperCollectionVO;
 import com.example.dataanalysiscollectionservice.service.impl.GraphQLSearchServiceImpl;
 import com.xxl.job.core.handler.annotation.XxlJob;
@@ -11,6 +14,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -73,7 +77,18 @@ public class XxlJobTaskSend {
                                 loginList.add(login);
                                 graphQLSearchService.graphqlSearch(login);
                                 DeveloperCollectionVO developerCollectionVO = graphQLSearchService.findByLogin(login);
-                                rabbitTemplate.convertAndSend("queue.calculate", developerCollectionVO);
+                                DeveloperCollectionTranDTO developerCollectionTranDTO = new DeveloperCollectionTranDTO();
+                                BeanUtils.copyProperties(developerCollectionVO, developerCollectionTranDTO);
+                                List<DeveloperProjectCollectionTranDTO> developerProjectCollectionTranDTOList = new ArrayList<>();
+                                developerCollectionVO.getDeveloperProjectCollectionList().forEach(
+                                        developerProject -> {
+                                            DeveloperProjectCollectionTranDTO developerProjectCollectionTranDTO = new DeveloperProjectCollectionTranDTO();
+                                            BeanUtils.copyProperties(developerProject, developerProjectCollectionTranDTO);
+                                            developerProjectCollectionTranDTOList.add(developerProjectCollectionTranDTO);
+                                        }
+                                );
+                                developerCollectionTranDTO.setDeveloperProjectCollectionList(developerProjectCollectionTranDTOList);
+                                rabbitTemplate.convertAndSend("queue.calculate", JSON.toJSONString(developerCollectionTranDTO));
                             }
                     );
                 } else {

@@ -2,8 +2,7 @@ package com.example.dataanalysiscalculateservice.feign;
 
 import com.example.core.pojo.base.ResponseModel;
 import com.example.dataanalysiscalculateservice.config.FeignClientInterceptor;
-import com.example.dataanalysiscalculateservice.pojo.dto.DeveloperCollectionDTO;
-import com.example.dataanalysiscalculateservice.pojo.dto.DeveloperProjectCollectionDTO;
+import com.example.core.pojo.dto.DeveloperCollectionTranDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -19,10 +18,10 @@ import java.util.List;
 public interface CalculateClientFeign {
 
     @GetMapping("/api/gitInfo/findAll")
-    public ResponseModel<List<DeveloperCollectionDTO>> searchAllDeveloper();
+    public ResponseModel<List<DeveloperCollectionTranDTO>> searchAllDeveloper();
 
 
     @GetMapping("/api/gitInfo/findByLogin")
-    public ResponseModel<DeveloperCollectionDTO> findByProjectUser(@RequestParam("login") String login);
+    public ResponseModel<DeveloperCollectionTranDTO> findByProjectUser(@RequestParam("login") String login);
 
 }
