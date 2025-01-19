@@ -1,7 +1,6 @@
 package com.example.dataanalysiscalculateservice.repository;
-
 //
-//import com.example.core.pojo.entity.mysql.TalentRankByPageRankEntity;
+//
 //import org.springframework.data.repository.CrudRepository;
 //import org.springframework.stereotype.Repository;
 //

@@ -2,7 +2,7 @@ server:
 #  tomcat:
 #    max-swallow-size: -1
 #  max-http-header-size: 2MB
-  port: 9003
+  port: 9004
 spring:
   application:
     name: data-analysis-gateway
@@ -17,10 +17,10 @@ spring:
           predicates: # 断言，满足所有断言，才会进行转发
             - Path=/auth/**
         - id: service           # 路由的唯一标识
-          uri: http://localhost:9001  # 如果断言成功，将要转发去的地址
+          uri: http://localhost:9003  # 如果断言成功，将要转发去的地址
           order: 0                    # 优先级，越小优先级越高
           predicates: # 断言，满足所有断言，才会进行转发
-            - Path=/api/**
+            - Path=/api/info/**
     config:
       discovery:
         enabled: true

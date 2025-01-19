@@ -37,7 +37,7 @@ public class TalentRankVO {
     private String areaCredence;
 
     @ApiModelProperty(value = "分数", example = "5.7")
-    private BigDecimal rank;
+    private BigDecimal talentRank;
 
     @ApiModelProperty(value = "历史分数记录（列表中的每个元素代表一个历史分数）", notes = "列表中的元素类型为BigDecimal")
     private List<BigDecimal> scoreHistory;
@@ -48,6 +48,6 @@ public class TalentRankVO {
     public TalentRankVO() {
         scoreHistory = new ArrayList<>();
         projectList = new ArrayList<>();
-        rank = BigDecimal.ZERO;
+        talentRank = BigDecimal.ZERO;
     }
 }

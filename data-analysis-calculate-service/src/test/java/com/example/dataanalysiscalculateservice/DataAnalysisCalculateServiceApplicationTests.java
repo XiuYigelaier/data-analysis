@@ -1,7 +1,6 @@
 package com.example.dataanalysiscalculateservice;
 
-import com.example.core.pojo.entity.neo4j.DeveloperGraphEntity;
-import com.example.core.repository.neo4j.DeveloperGraphRepository;
+import com.example.dataanalysiscalculateservice.repository.neo4j.DeveloperGraphRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;

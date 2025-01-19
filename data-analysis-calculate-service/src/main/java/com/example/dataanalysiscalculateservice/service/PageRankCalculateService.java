@@ -1,9 +1,8 @@
 //package com.example.dataanalysiscalculateservice.service;
 //
-//import com.example.core.pojo.entity.neo4j.DeveloperGraphEntity;
-//import com.example.dataanalysiscalculateservice.repository.TalentRankByPageRankRepository;
-//import com.example.dataanalysiscalculateservice.repository.TalentRankRepository;
-//import com.example.core.repository.neo4j.DeveloperGraphRepository;
+//import com.example.dataanalysiscalculateservice.pojo.po.neo4j.DeveloperGraphPO;
+//import com.example.dataanalysiscalculateservice.repository.mysql.TalentRankRepository;
+//import com.example.dataanalysiscalculateservice.repository.neo4j.DeveloperGraphRepository;
 //import org.jgrapht.Graph;
 //import org.jgrapht.alg.scoring.PageRank;
 //import org.jgrapht.graph.DefaultEdge;
@@ -29,8 +28,8 @@
 //
 //    public void pageRank(){
 //        Graph<String, DefaultEdge> graph = new SimpleDirectedGraph<>(DefaultEdge.class);
-//         List<DeveloperGraphEntity> developerGraphEntityList = developerGraphRepository.findAll();
-//         developerGraphEntityList.forEach(
+//         List<DeveloperGraphPO> developerGraphPOList = developerGraphRepository.findAll();
+//         developerGraphPOList.forEach(
 //                 follower->{
 //                     graph.addVertex(follower.getLogin());
 //                     follower.getFollowee().forEach(
@@ -42,7 +41,7 @@
 //                 }
 //
 //         );
-//         Map<String, BigDecimal> loginAndScoreMap = developerGraphEntityList.stream().collect(Collectors.toMap(DeveloperGraphEntity::getLogin,DeveloperGraphEntity::getScore));
+//         Map<String, BigDecimal> loginAndScoreMap = developerGraphPOList.stream().collect(Collectors.toMap(DeveloperGraphPO::getLogin, DeveloperGraphPO::getScore));
 //        PageRank<String,DefaultEdge> pageRank = new PageRank<>(graph,0.85);
 //        Map<String,Double> scores = pageRank.getScores();
 //        Map<String,TalentRankByPageRankEntity> allTalentRanks = talentRankByPageRankRepository.findAllAndDeletedIsFalse().stream().collect(Collectors.toMap(

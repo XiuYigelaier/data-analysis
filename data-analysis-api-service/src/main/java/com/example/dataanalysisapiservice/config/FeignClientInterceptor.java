@@ -5,15 +5,28 @@ import feign.RequestTemplate;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Component
 public class FeignClientInterceptor implements RequestInterceptor {
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+
+    private static final String BEARER_TOKEN_TYPE = "Bearer";
+
     @Override
     public void apply(RequestTemplate template) {
 
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        String Token = (String) securityContext.getAuthentication().getDetails();
-        template.header("Authorization",Token);
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            HttpServletRequest request = attributes.getRequest();
+            String token = request.getHeader("Authorization");
+            if (token != null) {
+                template.header("Authorization", token);
+            }
+        }
 //        String userId = loginUser.getUser().getId().toString();
 //        String jwt = JWTUtils.createJWT(UUID.randomUUID().toString(), userId, null);
 

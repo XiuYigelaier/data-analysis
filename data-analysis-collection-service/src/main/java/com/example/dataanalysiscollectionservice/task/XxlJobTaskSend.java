@@ -6,24 +6,24 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson2.JSON;
 import com.example.core.pojo.dto.DeveloperCollectionTranDTO;
 import com.example.core.pojo.dto.DeveloperProjectCollectionTranDTO;
-import com.example.dataanalysiscollectionservice.pojo.vo.DeveloperCollectionVO;
+import com.example.dataanalysiscollectionservice.pojo.vo.mysql.DeveloperCollectionVO;
 import com.example.dataanalysiscollectionservice.service.impl.GraphQLSearchServiceImpl;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class XxlJobTaskSend {
@@ -33,7 +33,7 @@ public class XxlJobTaskSend {
     String GITHUB_SEARCH_PER_PAGE;
     @Value("${git.token}")
     String GIT_TOKEN;
-    static Integer page = 11;
+    static Integer page = 0;
     private static final String GITHUB_SEARCH_USERS_URL = "https://api.github.com/search/users";
     private static final OkHttpClient client = new OkHttpClient();
     @Autowired
@@ -42,9 +42,13 @@ public class XxlJobTaskSend {
     RabbitTemplate rabbitTemplate;
     boolean hasMoreDate = true;
 
+    private static final Logger log = LoggerFactory.getLogger(XxlJobTaskSend.class);
+
+
     @XxlJob("searchDeveloperHandler")
     public void scheduledSearchUser() throws IOException {
-        while (hasMoreDate) {
+        System.out.println(GIT_TOKEN);
+        while (hasMoreDate&&page<=10) {
             HttpUrl urlBuilder = HttpUrl.parse(GITHUB_SEARCH_USERS_URL)
                     .newBuilder()
                     .addQueryParameter("q", "followers:>" + GITHUB_SEARCH_FOLLOWERS_MIN)
@@ -74,6 +78,7 @@ public class XxlJobTaskSend {
                     itemArray.forEach(
                             item -> {
                                 String login = ((JSONObject) item).getString("login");
+                                log.info("定时任务搜索当前github用户【"+login+"】");
                                 loginList.add(login);
                                 graphQLSearchService.graphqlSearch(login);
                                 DeveloperCollectionVO developerCollectionVO = graphQLSearchService.findByLogin(login);
@@ -93,7 +98,8 @@ public class XxlJobTaskSend {
                     );
                 } else {
                     // 请求失败，处理错误
-                    System.err.println("Request failed: " + response.code());
+                    log.error("定时任务请求失败【"+response.message()+"】");
+                    System.err.println("Request failed: " + response.code()+":"+response.message());
                 }
 
 

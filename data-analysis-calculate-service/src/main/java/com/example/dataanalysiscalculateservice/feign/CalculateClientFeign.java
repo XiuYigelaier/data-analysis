@@ -1,6 +1,7 @@
 package com.example.dataanalysiscalculateservice.feign;
 
 import com.example.core.pojo.base.ResponseModel;
+import com.example.core.pojo.dto.DeveloperCollectionGraphDTO;
 import com.example.dataanalysiscalculateservice.config.FeignClientInterceptor;
 import com.example.core.pojo.dto.DeveloperCollectionTranDTO;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -23,5 +24,9 @@ public interface CalculateClientFeign {
 
     @GetMapping("/api/gitInfo/findByLogin")
     public ResponseModel<DeveloperCollectionTranDTO> findByProjectUser(@RequestParam("login") String login);
+
+
+    @GetMapping("/api/gitInfo/findAllRelationship")
+    public ResponseModel<List<DeveloperCollectionGraphDTO>> findAllRelationGraph();
 
 }

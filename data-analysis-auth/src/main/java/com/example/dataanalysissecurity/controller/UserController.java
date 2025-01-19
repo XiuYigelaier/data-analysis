@@ -9,7 +9,6 @@ import com.example.dataanalysissecurity.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
-@CrossOrigin
 @RequestMapping("/auth")
 @RestController
 public class UserController {
@@ -48,7 +47,7 @@ public class UserController {
 
     }
     @GetMapping("/findUserInfo")
-    public ResponseModel<UserVO> findUserInfo(@RequestParam String token) {
+    public ResponseModel<UserVO> findUserInfo(@RequestParam("token") String token) {
         try {
             return ResponseModel.success(userService.findUserInfo(token));
         } catch (Exception e) {

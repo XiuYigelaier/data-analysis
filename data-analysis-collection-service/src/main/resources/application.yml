@@ -18,7 +18,7 @@ xxl:
       addresses: http://127.0.0.1:8080/xxl-job-admin
       accessToken: default_token
     executor:
-      appname: job-demo
+      appname: data-analysis
       logpath: /Users/xiuyi/Documents/bins/bins/xxl-job/log
       logretentiondays: 30
 

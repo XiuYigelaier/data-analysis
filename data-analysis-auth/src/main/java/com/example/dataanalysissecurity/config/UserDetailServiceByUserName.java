@@ -2,8 +2,8 @@ package com.example.dataanalysissecurity.config;
 
 import com.example.core.pojo.base.LoginUser;
 
-import com.example.core.pojo.base.UserEntity;
-import com.example.core.repository.mysql.UserRepository;
+import com.example.core.pojo.base.UserPO;
+import com.example.core.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,8 +22,8 @@ public class UserDetailServiceByUserName implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity userEntity = userRepository.findByUsernameAndDeletedFalse(username).orElseThrow(RuntimeException::new);
+        UserPO userPO = userRepository.findByUsernameAndDeletedFalse(username).orElseThrow(RuntimeException::new);
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-        return new LoginUser(userEntity);
+        return new LoginUser(userPO);
     }
 }

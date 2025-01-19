@@ -1,14 +1,14 @@
 package com.example.dataanalysiscollectionservice.factory;
 
 import com.example.core.pojo.base.BaseEntity;
-import com.example.dataanalysiscollectionservice.pojo.po.DeveloperAndProjectRelationShipCollectionPO;
-import com.example.dataanalysiscollectionservice.pojo.po.DeveloperCollectionPO;
-import com.example.dataanalysiscollectionservice.pojo.po.DeveloperProjectCollectionPO;
-import com.example.dataanalysiscollectionservice.pojo.vo.DeveloperCollectionVO;
-import com.example.dataanalysiscollectionservice.pojo.vo.DeveloperProjectCollectionVO;
-import com.example.dataanalysiscollectionservice.repository.DeveloperAndProjectRelationShipCollectionRepository;
-import com.example.dataanalysiscollectionservice.repository.DeveloperCollectionRepository;
-import com.example.dataanalysiscollectionservice.repository.DeveloperProjectCollectionRepository;
+import com.example.dataanalysiscollectionservice.pojo.po.mysql.DeveloperAndProjectRelationShipCollectionPO;
+import com.example.dataanalysiscollectionservice.pojo.po.mysql.DeveloperCollectionPO;
+import com.example.dataanalysiscollectionservice.pojo.po.mysql.DeveloperProjectCollectionPO;
+import com.example.dataanalysiscollectionservice.pojo.vo.mysql.DeveloperCollectionVO;
+import com.example.dataanalysiscollectionservice.pojo.vo.mysql.DeveloperProjectCollectionVO;
+import com.example.dataanalysiscollectionservice.repository.mysql.DeveloperAndProjectRelationShipCollectionRepository;
+import com.example.dataanalysiscollectionservice.repository.mysql.DeveloperCollectionRepository;
+import com.example.dataanalysiscollectionservice.repository.mysql.DeveloperProjectCollectionRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -79,7 +79,7 @@ public class DeveloperFactory {
     }
 
     public DeveloperCollectionVO toDeveloperCollectionVO(String login) {
-        DeveloperCollectionPO developer = developerCollectionRepository.findByLoginAndDeletedFalse(login).orElseThrow(() -> new RuntimeException("找不到对应login【" + login + "】"));
+        DeveloperCollectionPO developer = developerCollectionRepository.findByLoginAndDeletedFalse(login).orElseGet(DeveloperCollectionPO::new);
         List<DeveloperAndProjectRelationShipCollectionPO> developerAndProjectRelationShipCollectionPOS = developerAndProjectRelationShipCollectionRepository.findAllByDeletedFalseAndDeveloperId(developer.getId());
         List<String> projectIds = Stream.of("0").collect(Collectors.toList());
         developerAndProjectRelationShipCollectionPOS.forEach(

@@ -80,23 +80,22 @@ public class RedisUtil {
         SetOperations<String, Object> set = this.redisTemplate.opsForSet();
         set.add(key, new Object[]{value});
     }
-//
-//    public void addZSet(String key, Object val, Double rank){
-//        redisTemplate.opsForZSet().add(key,val,rank);
-//    }
-//    public void removeZSet(String key, String login){
-//        Set<ZSetOperations.TypedTuple<TalentRankVO>> zset = redisTemplate.opsForZSet().rangeWithScores(key, 0, -1);
-//
-//        if (zset != null) {
-//            for (ZSetOperations.TypedTuple<TalentRankVO> tuple : zset) {
-//                TalentRankVO vo = tuple.getValue();
-//                if (vo != null && login.equals(vo.getLogin())) {
-//                    redisTemplate.opsForZSet().remove(key, vo);
-//                    break; // 找到并删除后可以退出循环
-//                }
-//            }
-//        }
-//    }
+
+    public void addZSet(String key, Object val, Double rank){
+        redisTemplate.opsForZSet().add(key,val,rank);
+    }
+    public void removeZSet(String key) {
+        removeZSetRange(key, 0L, getZSetSize(key));
+    }
+
+    public void removeZSetRange(String key, Long start, Long end) {
+        redisTemplate.boundZSetOps(key).removeRange(start, end);
+    }
+
+    public long getZSetSize(String key) {
+        return redisTemplate.boundZSetOps(key).size();
+    }
+
 
     public <T> List<T> getZSet(String key){
         Set<ZSetOperations.TypedTuple<T>> sortedSet = redisTemplate.opsForZSet().reverseRangeByScoreWithScores(key, 0, Double.MAX_VALUE);

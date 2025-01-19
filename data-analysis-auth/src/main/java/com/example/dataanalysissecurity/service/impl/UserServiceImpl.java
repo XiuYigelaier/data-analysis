@@ -2,8 +2,8 @@ package com.example.dataanalysissecurity.service.impl;
 
 import com.example.core.pojo.base.LoginUser;
 
-import com.example.core.pojo.base.UserEntity;
-import com.example.core.repository.mysql.UserRepository;
+import com.example.core.pojo.base.UserPO;
+import com.example.core.repository.UserRepository;
 import com.example.core.utils.JWTUtils;
 import com.example.core.utils.RedisUtil;
 import com.example.dataanalysissecurity.pojo.vo.LoginVO;
@@ -43,15 +43,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void register(RegisterDTO registerDTO) {
-        UserEntity userEntity = new UserEntity();
+        UserPO userPO = new UserPO();
         String password = registerDTO.getPassword();
         String userName = registerDTO.getUsername();
-        userEntity.setPassword(passwordEncoder.encode(password));
-        userEntity.setUsername(userName);
+        userPO.setPassword(passwordEncoder.encode(password));
+        userPO.setUsername(userName);
         if (userRepository.findByUsernameAndDeletedFalse(userName).isPresent()) {
             throw new RuntimeException("账号不允许相同");
         }
-        userRepository.save(userEntity);
+        userRepository.save(userPO);
     }
 
     @Override
@@ -75,10 +75,11 @@ public class UserServiceImpl implements UserService {
     public UserVO findUserInfo(String token) throws Exception {
         Claims claim = JWTUtils.parseJWT(token);
         String userId = claim.getSubject();
-        String redisKey = "login:" + userId;
-        LoginUser user = (LoginUser) redisUtil.get(redisKey);
         UserVO userVO = new UserVO();
-        BeanUtils.copyProperties(user, userVO);
+        userRepository.findById(userId).ifPresent(user -> {
+            userVO.setUsername(user.getUsername());
+            userVO.setAvatar(user.getAvatar());
+        });
         return userVO;
     }
 }

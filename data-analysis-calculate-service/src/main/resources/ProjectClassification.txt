@@ -13,7 +13,7 @@
     OPEN_SOURCE_OS_AND_TOOLS("Open Source OS and Tools", "Operating systems and tools that are made available with an open source license."),
 
     // 前端应用
-    FRONTEND_APPLICATION("Frontend Application", "Software that runs on the userEntity's side, usually in a web browser, and handles userEntity interactions."),
+    FRONTEND_APPLICATION("Frontend Application", "Software that runs on the userPO's side, usually in a web browser, and handles userPO interactions."),
 
     // 后端服务
     BACKEND_SERVICE("Backend Service", "Software that runs on a server and handles data storage, retrieval, and application logic."),

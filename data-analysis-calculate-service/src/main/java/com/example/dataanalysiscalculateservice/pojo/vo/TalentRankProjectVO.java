@@ -28,7 +28,7 @@ public class TalentRankProjectVO {
     private BigDecimal score;
 
     @ApiModelProperty(value = "项目分类", notes = "这是一个枚举类型，表示项目的分类，例如'开源'、'商业'等")
-    private ProjectClassificationEnum classification;
+    private String classification;
 
 
 }

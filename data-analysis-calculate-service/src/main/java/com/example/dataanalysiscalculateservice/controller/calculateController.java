@@ -4,6 +4,8 @@ import com.example.core.pojo.base.ResponseModel;
 import com.example.dataanalysiscalculateservice.config.XFConfig;
 import com.example.dataanalysiscalculateservice.pojo.vo.TalentRankVO;
 import com.example.dataanalysiscalculateservice.service.CalculateService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,12 +20,15 @@ public class calculateController {
     @Autowired
     XFConfig xfConfig;
 
+    private static final Logger log = LoggerFactory.getLogger(CalculateService.class);
+
     @GetMapping("/calculateAll")
     public ResponseModel<?> calculateAll() {
         try {
             calculateService.calculateAll();
             return ResponseModel.success("计算成功");
         } catch (Exception e) {
+            log.error("calculateAll:"+e.getMessage());
             return ResponseModel.failure("计算失败" +  e.getMessage());
         }
     }
@@ -32,6 +37,7 @@ public class calculateController {
     @GetMapping("/calculateByLogin")
     public ResponseModel<?> calculateByLogin(String login ) {
         try {
+            log.info("calculateByLogin:login为【"+login+"】");
             calculateService.calculateByLogin(login);
             return ResponseModel.success("计算成功");
         } catch (Exception e) {
@@ -40,18 +46,17 @@ public class calculateController {
     }
 
     @GetMapping("/findAll")
-    public ResponseModel<?> findAll( ) {
+    public ResponseModel<List<TalentRankVO>> findAll() {
         try {
-
             return ResponseModel.success( calculateService.findAll());
         } catch (Exception e) {
             return ResponseModel.failure("计算失败" +  e.getMessage());
         }
     }
     @GetMapping("/findByLogin")
-    public ResponseModel<?> findByLogin( String login ) {
+    public ResponseModel<TalentRankVO> findByLogin( String login ) {
         try {
-
+            log.info("findByLogin:login为【"+login+"】");
             return ResponseModel.success(calculateService.findByLogin(login));
         } catch (Exception e) {
             return ResponseModel.failure("计算失败" +  e.getMessage());

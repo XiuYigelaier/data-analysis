@@ -15,10 +15,10 @@
     </properties>
 
     <parent>
-        <groupId>com.anaylsis</groupId>
+        <groupId>com.analysis</groupId>
         <artifactId>data-analysis</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <!-- lookup parent from repository -->
     </parent>
 
     <dependencies>

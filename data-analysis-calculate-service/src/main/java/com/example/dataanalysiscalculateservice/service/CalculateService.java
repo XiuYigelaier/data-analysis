@@ -3,21 +3,21 @@ package com.example.dataanalysiscalculateservice.service;
 import com.alibaba.fastjson.JSONObject;
 import com.example.dataanalysiscalculateservice.enums.ProjectClassificationEnum;
 import com.example.core.pojo.base.ResponseModel;
-import com.example.core.repository.neo4j.DeveloperGraphRepository;
+import com.example.dataanalysiscalculateservice.repository.neo4j.DeveloperGraphRepository;
 import com.example.dataanalysiscalculateservice.config.BigModelNew;
 import com.example.dataanalysiscalculateservice.feign.CalculateClientFeign;
 import com.example.dataanalysiscalculateservice.pojo.bo.*;
 import com.example.core.pojo.dto.DeveloperCollectionTranDTO;
 import com.example.core.pojo.dto.DeveloperProjectCollectionTranDTO;
-import com.example.dataanalysiscalculateservice.pojo.po.ScoreHistoryPO;
-import com.example.dataanalysiscalculateservice.pojo.po.TalentRankPO;
-import com.example.dataanalysiscalculateservice.pojo.po.TalentRankProjectPO;
+import com.example.dataanalysiscalculateservice.pojo.po.mysql.ScoreHistoryPO;
+import com.example.dataanalysiscalculateservice.pojo.po.mysql.TalentRankPO;
+import com.example.dataanalysiscalculateservice.pojo.po.mysql.TalentRankProjectPO;
 import com.example.dataanalysiscalculateservice.pojo.vo.ScoreHistoryVO;
 import com.example.dataanalysiscalculateservice.pojo.vo.TalentRankProjectVO;
 import com.example.dataanalysiscalculateservice.pojo.vo.TalentRankVO;
-import com.example.dataanalysiscalculateservice.repository.ScoreHistoryRepository;
-import com.example.dataanalysiscalculateservice.repository.TalentRankProjectRepository;
-import com.example.dataanalysiscalculateservice.repository.TalentRankRepository;
+import com.example.dataanalysiscalculateservice.repository.mysql.ScoreHistoryRepository;
+import com.example.dataanalysiscalculateservice.repository.mysql.TalentRankProjectRepository;
+import com.example.dataanalysiscalculateservice.repository.mysql.TalentRankRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -47,6 +47,7 @@ public class CalculateService {
     private TalentRankRepository talentRankRepository;
     @Autowired
     private TalentRankProjectRepository talentRankProjectRepository;
+
 
     private static final String NATION_FILE_PATH = "/Users/xiuyi/Documents/project/DATA-ANALYSIS/DataAnalysis/data-analysis-calculate-service/src/main/resources/AreaRules.txt";
     private static final String AREA_FILE_PATH = "/Users/xiuyi/Documents/project/DATA-ANALYSIS/DataAnalysis/data-analysis-calculate-service/src/main/resources/NationRules.txt";
@@ -294,6 +295,7 @@ public class CalculateService {
                             talentRankProjectPO -> {
                                 TalentRankProjectVO talentRankProjectVO = new TalentRankProjectVO();
                                 BeanUtils.copyProperties(talentRankProjectPO, talentRankProjectVO);
+                                talentRankProjectVO.setClassification(talentRankProjectPO.getClassification().getTerm());
                                 talentRankProjectVOS.add(talentRankProjectVO);
                             }
                     );
@@ -301,9 +303,7 @@ public class CalculateService {
                     List<BigDecimal> scoreHistoryList = new ArrayList<>();
                     scoreHistoryPOS.forEach(
                             scoreHistoryPO -> {
-                                ScoreHistoryVO scoreHistoryVO = new ScoreHistoryVO();
-                                scoreHistoryList.add(scoreHistoryVO.getScore());
-
+                                 scoreHistoryList.add(scoreHistoryPO.getScore());
                             }
 
                     );
@@ -326,7 +326,8 @@ public class CalculateService {
                 talentRankProjectPO -> {
                    TalentRankProjectVO talentRankProjectVO = new TalentRankProjectVO();
                    BeanUtils.copyProperties(talentRankProjectPO, talentRankProjectVO);
-                   talentRankProjectVOS.add(talentRankProjectVO);
+                    talentRankProjectVO.setClassification(talentRankProjectPO.getClassification().getTerm());
+                    talentRankProjectVOS.add(talentRankProjectVO);
                 }
         );
         List<ScoreHistoryPO> scoreHistoryPOS = scoreHistoryRepository.findAllByDeveloperGitIdAndDeletedFalse(talentRankPO.getGitId());

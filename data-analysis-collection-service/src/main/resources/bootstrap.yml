@@ -25,3 +25,6 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8762/eureka/
+      registry-fetch-interval-seconds: 30 # 默认值是 30 秒
+      connect-timeout-ms: 10000 # 设置连接超时为 10秒
+      read-timeout-ms: 20000 # 设置读取超时为 20秒

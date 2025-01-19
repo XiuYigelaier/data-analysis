@@ -2,9 +2,6 @@ package com.example.dataanalysiscalculateservice.task;
 
 import com.alibaba.fastjson.JSONObject;
 import com.example.core.pojo.dto.DeveloperCollectionTranDTO;
-import com.example.dataanalysiscalculateservice.repository.TalentRankProjectRepository;
-import com.example.dataanalysiscalculateservice.repository.TalentRankRepository;
-import com.example.dataanalysiscalculateservice.feign.CalculateClientFeign;
 import com.example.dataanalysiscalculateservice.service.CalculateService;
 import com.rabbitmq.client.Channel;
 

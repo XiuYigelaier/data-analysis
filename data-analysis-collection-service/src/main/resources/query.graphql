@@ -1,5 +1,5 @@
 {
-  userEntity(login: "yyx990803") {
+  userPO(login: "yyx990803") {
 
     id # 这是 GraphQL 中的全局唯一 ID，不是数字形用户 ID
     avatarUrl

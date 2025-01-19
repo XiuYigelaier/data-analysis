@@ -9,18 +9,18 @@ import java.util.Collection;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LoginUser implements UserDetails {
-    private UserEntity userEntity;
+    private UserPO userPO;
 
-    public LoginUser(UserEntity userEntity) {
-        this.userEntity = userEntity;
+    public LoginUser(UserPO userPO) {
+        this.userPO = userPO;
     }
 
-    public UserEntity getUser() {
-        return userEntity;
+    public UserPO getUser() {
+        return userPO;
     }
 
-    public void setUser(UserEntity userEntity) {
-        this.userEntity = userEntity;
+    public void setUser(UserPO userPO) {
+        this.userPO = userPO;
     }
 
 
@@ -34,12 +34,12 @@ public class LoginUser implements UserDetails {
 
     @Override
     public String getPassword() {
-        return userEntity.getPassword();
+        return userPO.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return userEntity.getUsername();
+        return userPO.getUsername();
     }
 
     @Override
