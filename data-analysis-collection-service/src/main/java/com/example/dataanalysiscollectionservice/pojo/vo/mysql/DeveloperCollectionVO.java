@@ -69,6 +69,10 @@ public class DeveloperCollectionVO {
     @ApiModelProperty(value = "开发者项目集合列表")
     private List<DeveloperProjectCollectionVO> developerProjectCollectionList;
 
+    @ApiModelProperty(value = "关注者数量")
+    private Integer  followingCount;
+
+
 
 
     public DeveloperCollectionVO() {

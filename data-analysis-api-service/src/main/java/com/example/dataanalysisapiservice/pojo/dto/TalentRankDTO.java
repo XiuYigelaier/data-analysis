@@ -45,6 +45,28 @@ public class TalentRankDTO {
     @ApiModelProperty(value = "参与的项目列表", notes = "列表中的每个元素是TalentRankProjectVO类型，代表开发者参与的一个项目")
     private List<TalentRankProjectDTO> projectList;
 
+
+    @ApiModelProperty(value = "被关注的数量")
+    private Integer  followersCount;
+
+    @ApiModelProperty(value = "关注者数量")
+    private Integer  followingCount;
+
+    @ApiModelProperty(value = "Repos数")
+    private  Integer publicReposCount;
+
+    @ApiModelProperty(value = "Gist数")
+    private  Integer publicGistsCount;
+
+    @ApiModelProperty(value = "开发者总提交数")
+    private  Integer commitCount;
+
+    @ApiModelProperty(value = "总评论数")
+    private Integer  commentCount;
+
+    @ApiModelProperty(value = "PR数")
+    private Integer PRCount;
+
     public TalentRankDTO() {
         scoreHistory = new ArrayList<>();
         projectList = new ArrayList<>();

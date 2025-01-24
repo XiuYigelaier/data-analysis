@@ -7,8 +7,6 @@ import lombok.Data;
 public class DeveloperProjectCollectionVO {
     @ApiModelProperty(value = "开发者id", required = true, example = "")
     private String developerId;
-    @ApiModelProperty(value = "项目id", required = true, example = "")
-    private String projectId;
     @ApiModelProperty(value = "项目提交数", required = true, example = "")
     private Integer commitCount;
     @ApiModelProperty(value = "事件提交数", required = true, example = "")

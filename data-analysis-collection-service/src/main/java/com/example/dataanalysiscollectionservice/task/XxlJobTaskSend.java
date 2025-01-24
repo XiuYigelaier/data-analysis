@@ -48,7 +48,7 @@ public class XxlJobTaskSend {
     @XxlJob("searchDeveloperHandler")
     public void scheduledSearchUser() throws IOException {
         System.out.println(GIT_TOKEN);
-        while (hasMoreDate&&page<=10) {
+        while (hasMoreDate&&page<=2) {
             HttpUrl urlBuilder = HttpUrl.parse(GITHUB_SEARCH_USERS_URL)
                     .newBuilder()
                     .addQueryParameter("q", "followers:>" + GITHUB_SEARCH_FOLLOWERS_MIN)

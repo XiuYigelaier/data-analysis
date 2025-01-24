@@ -1,5 +1,6 @@
 package com.example.core.pojo.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -28,6 +29,20 @@ public class DeveloperCollectionTranDTO implements Serializable {
     Integer totalRepositoriesWithCommits;
     Boolean hasAnyRestrictedContributions;
     List<DeveloperProjectCollectionTranDTO> developerProjectCollectionList;
+
+
+    @ApiModelProperty(value = "关注者数量")
+    private Integer  followingCount;
+
+    @ApiModelProperty(value = "开发者总提交数")
+    private  Integer commitCount;
+
+    @ApiModelProperty(value = "总评论数")
+    private Integer  commentCount;
+
+    @ApiModelProperty(value = "PR数")
+    private Integer prCount;
+
 
     public DeveloperCollectionTranDTO() {
         developerProjectCollectionList = new ArrayList<>();

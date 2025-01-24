@@ -182,7 +182,8 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
         developerEntity.setName((String) user.get("name"));
         developerEntity.setBio((String) user.get("bio"));
         developerEntity.setAvatarUrl((String) user.get("avatarUrl"));
-        developerEntity.setGitId((String) user.get("id"));
+        String gitId = (String) user.get("id");
+        developerEntity.setGitId(gitId);
         developerEntity.setLocation((String) user.get("location"));
         developerEntity.setCompany((String) user.get("company"));
         developerEntity.setPronouns((String) user.get("pronouns"));
@@ -191,6 +192,8 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
         developerEntity.setCampusExpertFlag((Boolean) user.get("isCampusExpert"));
         Map followerMap = (Map) user.get("followers");
         developerEntity.setFollowersCount((Integer) followerMap.get("totalCount"));
+        Map followingMap = (Map) user.get("following");
+        developerEntity.setFollowingCount((Integer) followingMap.get("totalCount"));
 
         Map gistMap = (Map) user.get("gists");
         developerEntity.setPublicGistsCount((Integer) gistMap.get("totalCount"));
@@ -205,16 +208,14 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
         developerEntity.setTotalRepositoriesWithCommits((Integer) contributionsCollectionMap.get("totalRepositoriesWithCommits"));
         developerEntity.setTotalIssueContributions((Integer) contributionsCollectionMap.get("totalIssueContributions"));
         developerEntity.setTotalPullRequestContributions((Integer) contributionsCollectionMap.get("totalPullRequestContributions"));
-        Map followingMap = (Map) user.get("following");
-        String developerId = developerCollectionRepository.save(developerEntity).getId();
+        String developerId = developerCollectionRepository.save(developerEntity).getGitId();
 
         //neo4j 添加数据
         DeveloperCollectionGraphPO loginNeo4jPO = new DeveloperCollectionGraphPO();
         loginNeo4jPO.setLogin(login);
-        loginNeo4jPO.setGitId((String) user.get("id"));
+        loginNeo4jPO.setGitId(gitId);
         loginNeo4jPO.setName((String) user.get("name"));
         loginNeo4jPO.setAvatarUrl((String) user.get("avatarUrl"));
-        loginNeo4jPO.setGitId((String) user.get("id"));
 
 
         ArrayList<LinkedHashMap> followers = (ArrayList<LinkedHashMap>) followerMap.get("nodes");
@@ -251,6 +252,7 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
 
         loginNeo4jPO.setFollowers(followerList);
         loginNeo4jPO.setFollowings(followingList);
+        developerGraphRepository.deleteById(developerId);
         developerGraphRepository.save(loginNeo4jPO);
 
 
@@ -261,11 +263,7 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
         pullRequestReviewContributionsByRepositoryList.forEach(
                 pullRep -> {
                     LinkedHashMap rep = (LinkedHashMap) pullRep.get("repository");
-                    DeveloperProjectCollectionPO developerProjectCollectionPO = new DeveloperProjectCollectionPO();
-                    Optional<DeveloperProjectCollectionPO> projectOpt = developerProjectCollectionRepository.findByGitIdAndDeletedFalse((String) rep.get("id"));
-                    if (projectOpt.isPresent()) {
-                        developerProjectCollectionPO = projectOpt.get();
-                    }
+                    DeveloperProjectCollectionPO developerProjectCollectionPO = developerProjectCollectionRepository.findByGitIdAndDeletedFalse((String) rep.get("id")).orElseGet(DeveloperProjectCollectionPO::new);
                     developerProjectCollectionPO.setGitId((String) rep.get("id"));
                     developerProjectCollectionPO.setUrl((String) rep.get("url"));
                     developerProjectCollectionPO.setName((String) rep.get("name"));
@@ -283,13 +281,13 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
                     }
                     developerProjectCollectionPO.setStargazersCount((Integer) rep.get("stargazerCount"));
                     developerProjectCollectionPO.setDescription((String) rep.get("description"));
-                    String projectId = developerProjectCollectionRepository.save(developerProjectCollectionPO).getId();
-                    Optional<DeveloperAndProjectRelationShipCollectionPO> developerAndProjectRelationShipOpt = developerAndProjectRelationShipCollectionRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
+                    String projectId = developerProjectCollectionRepository.save(developerProjectCollectionPO).getGitId();
+                    Optional<DeveloperAndProjectRelationShipCollectionPO> developerAndProjectRelationShipOpt = developerAndProjectRelationShipCollectionRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(gitId, projectId);
                     DeveloperAndProjectRelationShipCollectionPO developerAndProjectRelationShipCollectionPO = new DeveloperAndProjectRelationShipCollectionPO();
                     if (developerAndProjectRelationShipOpt.isPresent()) {
                         developerAndProjectRelationShipCollectionPO = developerAndProjectRelationShipOpt.get();
                     }
-                    developerAndProjectRelationShipCollectionPO.setDeveloperId(developerId);
+                    developerAndProjectRelationShipCollectionPO.setDeveloperId(gitId);
                     developerAndProjectRelationShipCollectionPO.setProjectId(projectId);
                     developerAndProjectRelationShipCollectionPO.setPrimaryLanguage(developerProjectCollectionPO.getLanguage());
                     developerAndProjectRelationShipCollectionPO.setHasAnyRestrictedContributions((Boolean) contributionsCollectionMap.get("hasAnyRestrictedContributions"));
@@ -301,11 +299,7 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
         issueContributionsByRepositoryList.forEach(
                 issueRep -> {
                     LinkedHashMap rep = (LinkedHashMap) issueRep.get("repository");
-                    DeveloperProjectCollectionPO developerProjectCollectionPO = new DeveloperProjectCollectionPO();
-                    Optional<DeveloperProjectCollectionPO> projectOpt = developerProjectCollectionRepository.findByGitIdAndDeletedFalse((String) rep.get("id"));
-                    if (projectOpt.isPresent()) {
-                        developerProjectCollectionPO = projectOpt.get();
-                    }
+                    DeveloperProjectCollectionPO developerProjectCollectionPO = developerProjectCollectionRepository.findByGitIdAndDeletedFalse((String) rep.get("id")).orElseGet(DeveloperProjectCollectionPO::new);
                     developerProjectCollectionPO.setGitId((String) rep.get("id"));
                     developerProjectCollectionPO.setUrl((String) rep.get("url"));
                     developerProjectCollectionPO.setName((String) rep.get("name"));
@@ -323,13 +317,13 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
                     }
                     developerProjectCollectionPO.setStargazersCount((Integer) rep.get("stargazerCount"));
                     developerProjectCollectionPO.setDescription((String) rep.get("description"));
-                    String projectId = developerProjectCollectionRepository.save(developerProjectCollectionPO).getId();
-                    Optional<DeveloperAndProjectRelationShipCollectionPO> developerAndProjectRelationShipOpt = developerAndProjectRelationShipCollectionRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
+                    String projectId = developerProjectCollectionRepository.save(developerProjectCollectionPO).getGitId();
+                    Optional<DeveloperAndProjectRelationShipCollectionPO> developerAndProjectRelationShipOpt = developerAndProjectRelationShipCollectionRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(gitId, projectId);
                     DeveloperAndProjectRelationShipCollectionPO developerAndProjectRelationShipCollectionPO = new DeveloperAndProjectRelationShipCollectionPO();
                     if (developerAndProjectRelationShipOpt.isPresent()) {
                         developerAndProjectRelationShipCollectionPO = developerAndProjectRelationShipOpt.get();
                     }
-                    developerAndProjectRelationShipCollectionPO.setDeveloperId(developerId);
+                    developerAndProjectRelationShipCollectionPO.setDeveloperId(gitId);
                     developerAndProjectRelationShipCollectionPO.setProjectId(projectId);
                     developerAndProjectRelationShipCollectionPO.setPrimaryLanguage(developerProjectCollectionPO.getLanguage());
                     developerAndProjectRelationShipCollectionPO.setHasAnyRestrictedContributions((Boolean) contributionsCollectionMap.get("hasAnyRestrictedContributions"));
@@ -341,11 +335,7 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
         commitContributionsByRepositoryList.forEach(
                 commitRep -> {
                     LinkedHashMap rep = (LinkedHashMap) commitRep.get("repository");
-                    DeveloperProjectCollectionPO developerProjectCollectionPO = new DeveloperProjectCollectionPO();
-                    Optional<DeveloperProjectCollectionPO> projectOpt = developerProjectCollectionRepository.findByGitIdAndDeletedFalse((String) rep.get("id"));
-                    if (projectOpt.isPresent()) {
-                        developerProjectCollectionPO = projectOpt.get();
-                    }
+                    DeveloperProjectCollectionPO developerProjectCollectionPO = developerProjectCollectionRepository.findByGitIdAndDeletedFalse((String) rep.get("id")).orElseGet(DeveloperProjectCollectionPO::new);
                     developerProjectCollectionPO.setDescription((String) rep.get("description"));
                     developerProjectCollectionPO.setGitId((String) rep.get("id"));
                     developerProjectCollectionPO.setUrl((String) rep.get("url"));
@@ -364,13 +354,13 @@ public class GraphQLSearchServiceImpl implements GraphQLSearchService {
                     }
                     developerProjectCollectionPO.setStargazersCount((Integer) rep.get("stargazerCount"));
                     developerProjectCollectionPO.setDescription((String) rep.get("description"));
-                    String projectId = developerProjectCollectionRepository.save(developerProjectCollectionPO).getId();
-                    Optional<DeveloperAndProjectRelationShipCollectionPO> developerAndProjectRelationShipOpt = developerAndProjectRelationShipCollectionRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(developerId, projectId);
+                    String projectId = developerProjectCollectionRepository.save(developerProjectCollectionPO).getGitId();
+                    Optional<DeveloperAndProjectRelationShipCollectionPO> developerAndProjectRelationShipOpt = developerAndProjectRelationShipCollectionRepository.findByDeveloperIdAndProjectIdAndDeletedFalse(gitId, projectId);
                     DeveloperAndProjectRelationShipCollectionPO developerAndProjectRelationShipCollectionPO = new DeveloperAndProjectRelationShipCollectionPO();
                     if (developerAndProjectRelationShipOpt.isPresent()) {
                         developerAndProjectRelationShipCollectionPO = developerAndProjectRelationShipOpt.get();
                     }
-                    developerAndProjectRelationShipCollectionPO.setDeveloperId(developerId);
+                    developerAndProjectRelationShipCollectionPO.setDeveloperId(gitId);
                     developerAndProjectRelationShipCollectionPO.setProjectId(projectId);
                     developerAndProjectRelationShipCollectionPO.setPrimaryLanguage(developerProjectCollectionPO.getLanguage());
                     developerAndProjectRelationShipCollectionPO.setHasAnyRestrictedContributions((Boolean) contributionsCollectionMap.get("hasAnyRestrictedContributions"));

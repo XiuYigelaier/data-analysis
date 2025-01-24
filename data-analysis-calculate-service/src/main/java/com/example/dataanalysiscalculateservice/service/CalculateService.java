@@ -12,7 +12,6 @@ import com.example.core.pojo.dto.DeveloperProjectCollectionTranDTO;
 import com.example.dataanalysiscalculateservice.pojo.po.mysql.ScoreHistoryPO;
 import com.example.dataanalysiscalculateservice.pojo.po.mysql.TalentRankPO;
 import com.example.dataanalysiscalculateservice.pojo.po.mysql.TalentRankProjectPO;
-import com.example.dataanalysiscalculateservice.pojo.vo.ScoreHistoryVO;
 import com.example.dataanalysiscalculateservice.pojo.vo.TalentRankProjectVO;
 import com.example.dataanalysiscalculateservice.pojo.vo.TalentRankVO;
 import com.example.dataanalysiscalculateservice.repository.mysql.ScoreHistoryRepository;
@@ -85,12 +84,16 @@ public class CalculateService {
     public void calculate(DeveloperCollectionTranDTO developerCollectionTranDTO) throws Exception {
         String gitId = developerCollectionTranDTO.getGitId();
         SecurityContextHolder ctx = new SecurityContextHolder();
+        BigModelNew model = new BigModelNew(ctx.toString(), true);
         TalentRankPO talentRankPO = talentRankRepository.findByGitIdAndDeletedFalse(gitId).orElseGet(TalentRankPO::new);
         if (StringUtils.hasText(talentRankPO.getId())) {
             talentRankProjectRepository.deleteAllByDeveloperIdAndDeletedFalse(talentRankPO.getId());
 
         }
         BigDecimal totalScore = BigDecimal.ZERO;
+        Integer commitCount = 0;
+        Integer commentCount = 0;
+        Integer prCount = 0;
         CalculateDeveloperBO calculateDeveloperBO = new CalculateDeveloperBO();
         calculateDeveloperBO.setGistCount(developerCollectionTranDTO.getPublicGistsCount());
         Integer flagCount = 0;
@@ -127,56 +130,80 @@ public class CalculateService {
             talentProjectPO.setScore(projectScore);
             talentProjectPO.setProjectName(developerProject.getName());
             talentProjectPO.setStarCount(developerProject.getStargazersCount());
-           //推测项目分类
-            BigModelNew projectCategoryModelNew = new BigModelNew(ctx.toString(), true);
-            ProjectCategoryBO projectCategoryBO = new ProjectCategoryBO();
-            projectCategoryBO.setDescription(developerProject.getDescription());
-            projectCategoryBO.setName(developerProject.getName());
-            byte[] categoryBytes = Files.readAllBytes(Paths.get(PROJECT_CATEGORY_PATH));
-            String categoryRule = new String(categoryBytes, StandardCharsets.UTF_8);
-            CompletableFuture<String> categoryFuture = projectCategoryModelNew.requestModel(categoryRule + projectCategoryBO);
-            JSONObject categoryObj = modelAnswerToJsonObject(categoryFuture.get());
-            talentProjectPO.setClassification( ProjectClassificationEnum.fromString(categoryObj.getString("category")));
-            projectPOS.add(talentProjectPO);
 
+            //总贡献和
+            prCount += developerProject.getPullRequestReviewEventCount();
+            commitCount += developerProject.getCommitCount();
+            commentCount += developerProject.getIssuesCommentEventCount();
 
+            //推测项目分类
+            try {
+                 ProjectCategoryBO projectCategoryBO = new ProjectCategoryBO();
+                projectCategoryBO.setDescription(developerProject.getDescription());
+                projectCategoryBO.setName(developerProject.getName());
+                byte[] categoryBytes = Files.readAllBytes(Paths.get(PROJECT_CATEGORY_PATH));
+                String categoryRule = new String(categoryBytes, StandardCharsets.UTF_8);
+                CompletableFuture<String> categoryFuture = model.requestModel(categoryRule + projectCategoryBO);
+                JSONObject categoryObj = modelAnswerToJsonObject(categoryFuture.get());
+                if (categoryObj != null) {
+                    talentProjectPO.setClassification(ProjectClassificationEnum.fromString(categoryObj.getString("category")));
+                    projectPOS.add(talentProjectPO);
+                }
+
+            } catch (Exception e) {
+                System.out.println("技术分类推测失败:" + e.getMessage());
+            }
         }
         talentRankProjectRepository.saveAll(projectPOS);
         totalScore = totalScore.setScale(2, RoundingMode.HALF_UP);
 
 
-        //nation大模型推测
-        DeveloperNationAnswerBO developerNationAnswerBO = new DeveloperNationAnswerBO();
-        developerNationAnswerBO.setName((developerCollectionTranDTO.getName()));
-        developerNationAnswerBO.setLocation(developerCollectionTranDTO.getLocation());
-        developerNationAnswerBO.setBio(developerCollectionTranDTO.getBio());
-        developerNationAnswerBO.setCompany(developerCollectionTranDTO.getCompany());
-        developerNationAnswerBO.setPronouns(developerCollectionTranDTO.getPronouns());
+        try {
+            DeveloperNationAnswerBO developerNationAnswerBO = new DeveloperNationAnswerBO();
+            developerNationAnswerBO.setName((developerCollectionTranDTO.getName()));
+            developerNationAnswerBO.setLocation(developerCollectionTranDTO.getLocation());
+            developerNationAnswerBO.setBio(developerCollectionTranDTO.getBio());
+            developerNationAnswerBO.setCompany(developerCollectionTranDTO.getCompany());
+            developerNationAnswerBO.setPronouns(developerCollectionTranDTO.getPronouns());
 
-        BigModelNew localModelNew = new BigModelNew(ctx.toString(), true);
-        byte[] nationBytes = Files.readAllBytes(Paths.get(NATION_FILE_PATH));
-        String localRule = new String(nationBytes, StandardCharsets.UTF_8);
-        CompletableFuture<String> localFuture = localModelNew.requestModel(localRule + developerNationAnswerBO);
-        //等待上次完成
-        if (!localFuture.isDone()) {
-            Thread.sleep(200);
+            byte[] nationBytes = Files.readAllBytes(Paths.get(NATION_FILE_PATH));
+            String localRule = new String(nationBytes, StandardCharsets.UTF_8);
+            CompletableFuture<String> localFuture = model.requestModel(localRule + developerNationAnswerBO);
+            //等待上次完成
+            if (!localFuture.isDone()) {
+                Thread.sleep(200);
+            }
+            String local = localFuture.get();
+            JSONObject localObj = modelAnswerToJsonObject(local);
+            if (localObj != null) {
+                talentRankPO.setLocationCredence((String) localObj.get("credence"));
+                talentRankPO.setLocation((String) localObj.get("nation"));
+
+            }
+        } catch (Exception e) {
+            System.out.println("大模型地区推测失败：" + e);
         }
-        String local = localFuture.get();
-        JSONObject localObj = modelAnswerToJsonObject(local);
-        talentRankPO.setLocationCredence((String) localObj.get("credence"));
-        talentRankPO.setLocation((String) localObj.get("nation"));
+        //nation大模型推测
 
+
+        try {
+            DeveloperAreaBO developerAreaBO = new DeveloperAreaBO();
+            developerAreaBO.setLanguages(languages);
+            developerAreaBO.setBio(developerCollectionTranDTO.getBio());
+            byte[] areaBytes = Files.readAllBytes(Paths.get(AREA_FILE_PATH));
+            String areaRule = new String(areaBytes, StandardCharsets.UTF_8);
+            CompletableFuture<String> areaFuture = model.requestModel(areaRule + developerAreaBO);
+            JSONObject areaObj = modelAnswerToJsonObject(areaFuture.get());
+            if (areaObj != null) {
+                talentRankPO.setAreas((String) areaObj.get("area"));
+                talentRankPO.setAreaCredence((String) areaObj.get("credence"));
+            }
+        } catch (Exception e) {
+            System.out.println("领域推测失败:" + e);
+
+        }
         //调用大模型获取擅长领域
-        BigModelNew areaModelNew = new BigModelNew(ctx.toString(), true);
-        DeveloperAreaBO developerAreaBO = new DeveloperAreaBO();
-        developerAreaBO.setLanguages(languages);
-        developerAreaBO.setBio(developerCollectionTranDTO.getBio());
-        byte[] areaBytes = Files.readAllBytes(Paths.get(AREA_FILE_PATH));
-        String areaRule = new String(areaBytes, StandardCharsets.UTF_8);
-        CompletableFuture<String> areaFuture = areaModelNew.requestModel(areaRule + developerAreaBO);
-        JSONObject areaObj = modelAnswerToJsonObject(areaFuture.get());
-        talentRankPO.setAreas((String) areaObj.get("area"));
-        talentRankPO.setAreaCredence((String) areaObj.get("credence"));
+
 
         talentRankPO.setCompany(developerCollectionTranDTO.getCompany());
         talentRankPO.setName(developerCollectionTranDTO.getName());
@@ -186,6 +213,16 @@ public class CalculateService {
         talentRankPO.setAvatarUrl(developerCollectionTranDTO.getAvatarUrl());
         talentRankPO.setTalentRank(totalScore);
         talentRankPO.setGitId(developerCollectionTranDTO.getGitId());
+        talentRankPO.setPrCount(developerCollectionTranDTO.getPrCount());
+        talentRankPO.setPublicGistsCount(developerCollectionTranDTO.getPublicGistsCount());
+        talentRankPO.setPublicReposCount(developerCollectionTranDTO.getPublicReposCount());
+        talentRankPO.setFollowersCount(developerCollectionTranDTO.getFollowersCount());
+        talentRankPO.setFollowingCount(developerCollectionTranDTO.getFollowingCount());
+        talentRankPO.setCommentCount(commentCount);
+        talentRankPO.setCommitCount(commitCount);
+        talentRankPO.setPrCount(prCount);
+
+
         talentRankRepository.save(talentRankPO);
 
         ScoreHistoryPO scoreHistoryPO = new ScoreHistoryPO();
@@ -245,7 +282,7 @@ public class CalculateService {
             return jsonObject;
         } else {
             System.out.println("未找到匹配的 JSON 内容。");
-            throw new RuntimeException("未找到匹配的 JSON 内容。");
+            return null;
         }
 
     }
@@ -289,7 +326,7 @@ public class CalculateService {
                 talentRankPO -> {
                     TalentRankVO talentRankVO = new TalentRankVO();
                     BeanUtils.copyProperties(talentRankPO, talentRankVO);
-                    List<TalentRankProjectPO> talentRankProjectPOS = groupedByDeveloperId.getOrDefault(talentRankPO.getId(), new ArrayList<>());
+                    List<TalentRankProjectPO> talentRankProjectPOS = groupedByDeveloperId.getOrDefault(talentRankPO.getGitId(), new ArrayList<>());
                     List<TalentRankProjectVO> talentRankProjectVOS = new ArrayList<>();
                     talentRankProjectPOS.forEach(
                             talentRankProjectPO -> {
@@ -303,7 +340,7 @@ public class CalculateService {
                     List<BigDecimal> scoreHistoryList = new ArrayList<>();
                     scoreHistoryPOS.forEach(
                             scoreHistoryPO -> {
-                                 scoreHistoryList.add(scoreHistoryPO.getScore());
+                                scoreHistoryList.add(scoreHistoryPO.getScore());
                             }
 
                     );
@@ -313,19 +350,19 @@ public class CalculateService {
 
                 }
         );
-        return  result;
+        return result;
     }
 
     public TalentRankVO findByLogin(String login) {
         TalentRankVO result = new TalentRankVO();
-        TalentRankPO talentRankPO = talentRankRepository.findByLoginAndDeletedFalse(login).orElseThrow(()->new RuntimeException("找不到对应login"));
+        TalentRankPO talentRankPO = talentRankRepository.findByLoginAndDeletedFalse(login).orElseThrow(() -> new RuntimeException("找不到对应login"));
         BeanUtils.copyProperties(talentRankPO, result);
-        List<TalentRankProjectPO> talentRankProjectPOS = talentRankProjectRepository.findAllByDeveloperIdAndDeletedFalse(talentRankPO.getId());
+        List<TalentRankProjectPO> talentRankProjectPOS = talentRankProjectRepository.findAllByDeveloperIdAndDeletedFalse(talentRankPO.getGitId());
         List<TalentRankProjectVO> talentRankProjectVOS = new ArrayList<>();
         talentRankProjectPOS.forEach(
                 talentRankProjectPO -> {
-                   TalentRankProjectVO talentRankProjectVO = new TalentRankProjectVO();
-                   BeanUtils.copyProperties(talentRankProjectPO, talentRankProjectVO);
+                    TalentRankProjectVO talentRankProjectVO = new TalentRankProjectVO();
+                    BeanUtils.copyProperties(talentRankProjectPO, talentRankProjectVO);
                     talentRankProjectVO.setClassification(talentRankProjectPO.getClassification().getTerm());
                     talentRankProjectVOS.add(talentRankProjectVO);
                 }
@@ -341,7 +378,6 @@ public class CalculateService {
         result.setProjectList(talentRankProjectVOS);
         return result;
     }
-
 
 
 }

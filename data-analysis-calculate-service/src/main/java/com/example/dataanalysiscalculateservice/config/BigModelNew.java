@@ -26,11 +26,12 @@ public class BigModelNew extends WebSocketListener {
     // Spark Max       https://spark-api.xf-yun.com/v3.5/chat      domain参数为generalv3.5
     // Spark Max-32K   https://spark-api.xf-yun.com/chat/max-32k   domain参数为max-32k
     // Spark4.0 Ultra  https://spark-api.xf-yun.com/v4.0/chat      domain参数为4.0Ultra
+
     public static final String hostUrl = "https://spark-api.xf-yun.com/v1.1/chat";
     public static final String domain = "lite";
-    public static final String appId = "5c8ddad7";
-    public static final String apiSecret = "YTkyOGY4ZDY5NWMzZjM1ZTkxZGY4ZTAw";
-    public static final String apiKey = "a62d8e55ede25503167123d335ec8dcd";
+    public static final String appId = "22af0843";
+    public static final String apiSecret = "MWM5NDZjZjViZDVhYzEzMjM3NjBlMjA5";
+    public static final String apiKey = "257c0abf0e25d98e937507d957ad32eb";
 
     public static List<RoleContent> historyList = new ArrayList<>(); // 对话历史存储集合
 
@@ -222,26 +223,32 @@ public class BigModelNew extends WebSocketListener {
 
     @Override
     public void onMessage(WebSocket webSocket, String text) {
-
-
-        // System.out.println(userId + "用来区分那个用户的结果" + text);
         JsonParse myJsonParse = gson.fromJson(text, JsonParse.class);
+
+        // 检查返回的错误码
         if (myJsonParse.header.code != 0) {
+            // 输出错误信息
             System.out.println("发生错误，错误码为：" + myJsonParse.header.code);
             System.out.println("本次请求的sid为：" + myJsonParse.header.sid);
             System.out.println("原因为：" + myJsonParse);
-            webSocket.close(1000, "");
+
+            // 你可以在这里设置一个默认的返回值
+            totalAnswer = "发生错误，无法处理您的请求，请稍后再试。";
+
+            // 不关闭连接，继续监听和处理后续消息
+            // 可以触发一个新的请求或其他操作
+
+            return ; // 返回默认值，继续处理
         }
+
+        // 正常处理响应
         List<Text> textList = myJsonParse.payload.choices.text;
         for (Text temp : textList) {
-            System.out.print(temp.content);
             totalAnswer = totalAnswer + temp.content;
         }
 
+        // 检查是否结束，准备关闭连接
         if (myJsonParse.header.status == 2) {
-            // 可以关闭连接，释放资源
-            System.out.println();
-            System.out.println("*************************************************************************************");
             if (canAddHistory()) {
                 RoleContent roleContent = new RoleContent();
                 roleContent.setRole("assistant");
@@ -254,40 +261,49 @@ public class BigModelNew extends WebSocketListener {
                 roleContent.setContent(totalAnswer);
                 historyList.add(roleContent);
             }
+
             wsCloseFlag = true;
-
             totalFlag = true;
-            webSocket.close(1000, "");
+            webSocket.close(1000, "正常结束");
         }
-
-
-
     }
 
     @Override
     public void onFailure(WebSocket webSocket, Throwable t, Response response) {
         super.onFailure(webSocket, t, response);
         try {
-            if (null != response) {
+            if (response != null) {
                 int code = response.code();
                 System.out.println("onFailure code:" + code);
                 System.out.println("onFailure body:" + response.body().string());
-                if (101 != code) {
-                    System.out.println("connection failed");
-                    System.exit(0);
+
+                if (code != 101) {
+                    totalAnswer = "网络连接失败，请稍后再试。";
+                    webSocket.close(1000, "连接失败");
                 }
             }
         } catch (IOException e) {
-            // TODO Auto-generated catch biock
             e.printStackTrace();
+        } finally {
+            // 重置状态
+            wsCloseFlag = true;
+            totalFlag = true;
+            future.complete(totalAnswer);
         }
     }
 
     @Override
     public void onClosing(WebSocket webSocket, int code, String reason) {
         super.onClosing(webSocket, code, reason);
+        // 确保在关闭时重置状态
+        wsCloseFlag = true;
+        totalFlag = true;
         future.complete(totalAnswer);
     }
+
+
+
+
 
     // 鉴权方法
     public String getAuthUrl(String hostUrl, String apiKey, String apiSecret) throws Exception {

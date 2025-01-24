@@ -4,6 +4,7 @@ import com.example.dataanalysiscalculateservice.enums.ProjectClassificationEnum;
 import com.example.core.pojo.base.BaseEntity;
 import lombok.Data;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ public class TalentRankProjectPO extends BaseEntity {
     String developerId;
     String projectName;
     String url;
+    @Column(name = "description", columnDefinition = "text comment '简介'")
     String description;
     Integer starCount;
     BigDecimal score;

@@ -1,6 +1,7 @@
 package com.example.dataanalysiscollectionservice.pojo.po.mysql;
 
 import com.example.core.pojo.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -68,6 +69,8 @@ public class DeveloperCollectionPO extends BaseEntity {
     @Column(name = "has_any_restricted_contributions", columnDefinition = "bit(1) comment '是否有受限贡献'")
     private Boolean hasAnyRestrictedContributions;
 
+    @Column(name = "following_count", columnDefinition = "varchar(255) comment '关注者数量'")
+    private Integer  followingCount;
 
 
 }

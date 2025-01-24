@@ -17,5 +17,5 @@ public interface DeveloperProjectCollectionRepository extends CrudRepository<Dev
     @Transactional
     void deleteAllByIdInAndDeletedFalse(List<String> projectId);
 
-    List<DeveloperProjectCollectionPO> findAllByDeletedFalseAndIdIn(List<String> projectId);
+    List<DeveloperProjectCollectionPO> findAllByDeletedFalseAndGitIdIn(List<String> projectId);
 }

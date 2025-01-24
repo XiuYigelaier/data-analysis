@@ -15,7 +15,7 @@ public class DeveloperRepositoryCollectionPO extends BaseEntity {
     private String developerId;
     @Column(name = "repository_name",columnDefinition = "varchar(255) comment '仓库名'")
     private String repositoryName;
-    @Column(name = "url",columnDefinition = "varchar(255) comment '仓库地址")
+    @Column(name = "url",columnDefinition = "varchar(255) comment '仓库地址'")
     private String url;
     @Column(name = "star_count",columnDefinition = "varchar(255) comment '星标数量'")
     private Integer starCount;

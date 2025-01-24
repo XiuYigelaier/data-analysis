@@ -1,6 +1,5 @@
 package com.example.dataanalysiscollectionservice.factory;
 
-import com.example.core.pojo.base.BaseEntity;
 import com.example.dataanalysiscollectionservice.pojo.po.mysql.DeveloperAndProjectRelationShipCollectionPO;
 import com.example.dataanalysiscollectionservice.pojo.po.mysql.DeveloperCollectionPO;
 import com.example.dataanalysiscollectionservice.pojo.po.mysql.DeveloperProjectCollectionPO;
@@ -32,26 +31,27 @@ public class DeveloperFactory {
 
 
     public List<DeveloperCollectionVO> toDeveloperCollectionVOList(List<DeveloperCollectionPO> developerCollectionPOS) {
-        List<String> developerIds = developerCollectionPOS.stream().map(BaseEntity::getId).collect(Collectors.toList());
+        List<String> developerIds = developerCollectionPOS.stream().map(DeveloperCollectionPO::getGitId).collect(Collectors.toList());
         Map<String, List<DeveloperAndProjectRelationShipCollectionPO>> groupedByDeveloperId = new LinkedHashMap<>();
         List<String> developerProjectIds = Stream.of("0").collect(Collectors.toList());
 
+        List<String> projectIds = new ArrayList<>();
         developerAndProjectRelationShipCollectionRepository.findAllByDeletedFalseAndDeveloperIdIn(developerIds).forEach(
                 developerAndProjectRelationShipCollectionPO -> {
                     List<DeveloperAndProjectRelationShipCollectionPO> developerAndProjectRelationShipCollectionPOS = groupedByDeveloperId.getOrDefault(developerAndProjectRelationShipCollectionPO.getDeveloperId(), new ArrayList<>());
                     developerAndProjectRelationShipCollectionPOS.add(developerAndProjectRelationShipCollectionPO);
-                    groupedByDeveloperId.put(developerAndProjectRelationShipCollectionPO.getId(), developerAndProjectRelationShipCollectionPOS);
+                    groupedByDeveloperId.put(developerAndProjectRelationShipCollectionPO.getDeveloperId(), developerAndProjectRelationShipCollectionPOS);
                     developerProjectIds.add(developerAndProjectRelationShipCollectionPO.getDeveloperId());
-
+                     projectIds.add(developerAndProjectRelationShipCollectionPO.getProjectId());
                 }
         );
-        Map<String, DeveloperProjectCollectionPO> idAndDeveloperProjectPO = developerProjectCollectionRepository.findAllByDeletedFalseAndIdIn(developerProjectIds).stream().collect(Collectors.toMap(DeveloperProjectCollectionPO::getId, developerProjectCollectionPO -> developerProjectCollectionPO));
+        Map<String, DeveloperProjectCollectionPO> idAndDeveloperProjectPO = developerProjectCollectionRepository.findAllByDeletedFalseAndGitIdIn(projectIds).stream().collect(Collectors.toMap(DeveloperProjectCollectionPO::getGitId, developerProjectCollectionPO -> developerProjectCollectionPO));
         List<DeveloperCollectionVO> result = new ArrayList<>();
         developerCollectionPOS.forEach(
                 developer -> {
                     DeveloperCollectionVO developerCollectionVO = new DeveloperCollectionVO();
                     BeanUtils.copyProperties(developer, developerCollectionVO);
-                    List<DeveloperAndProjectRelationShipCollectionPO> developerAndProjectRelationShipCollectionPOS = groupedByDeveloperId.getOrDefault(developer.getId(), new ArrayList<>());
+                    List<DeveloperAndProjectRelationShipCollectionPO> developerAndProjectRelationShipCollectionPOS = groupedByDeveloperId.getOrDefault(developer.getGitId(), new ArrayList<>());
                     List<DeveloperProjectCollectionVO> developerProjectCollectionVOS = new ArrayList<>();
                     developerAndProjectRelationShipCollectionPOS.forEach(
                             developerAndProjectRelationShipCollectionPO -> {
@@ -59,6 +59,7 @@ public class DeveloperFactory {
                                 BeanUtils.copyProperties(developerAndProjectRelationShipCollectionPO, developerProjectCollectionVO);
                                 DeveloperProjectCollectionPO developerProjectCollectionPO = idAndDeveloperProjectPO.getOrDefault(developerAndProjectRelationShipCollectionPO.getProjectId(), new DeveloperProjectCollectionPO());
                                 //开发者项目
+                                developerProjectCollectionVO.setDeveloperId(developerCollectionVO.getGitId());
                                 developerProjectCollectionVO.setDescription(developerProjectCollectionPO.getDescription());
                                 developerProjectCollectionVO.setName(developerProjectCollectionPO.getName());
                                 developerProjectCollectionVO.setGitId(developerProjectCollectionPO.getGitId());
@@ -80,14 +81,14 @@ public class DeveloperFactory {
 
     public DeveloperCollectionVO toDeveloperCollectionVO(String login) {
         DeveloperCollectionPO developer = developerCollectionRepository.findByLoginAndDeletedFalse(login).orElseGet(DeveloperCollectionPO::new);
-        List<DeveloperAndProjectRelationShipCollectionPO> developerAndProjectRelationShipCollectionPOS = developerAndProjectRelationShipCollectionRepository.findAllByDeletedFalseAndDeveloperId(developer.getId());
+        List<DeveloperAndProjectRelationShipCollectionPO> developerAndProjectRelationShipCollectionPOS = developerAndProjectRelationShipCollectionRepository.findAllByDeletedFalseAndDeveloperId(developer.getGitId());
         List<String> projectIds = Stream.of("0").collect(Collectors.toList());
         developerAndProjectRelationShipCollectionPOS.forEach(
                 developerAndProjectRelationShipCollectionPO -> {
                     projectIds.add(developerAndProjectRelationShipCollectionPO.getProjectId());
                 }
         );
-        Map<String, DeveloperProjectCollectionPO> idAndDeveloperProjectPO = developerProjectCollectionRepository.findAllByDeletedFalseAndIdIn(projectIds).stream().collect(Collectors.toMap(DeveloperProjectCollectionPO::getId, developerProjectCollectionPO -> developerProjectCollectionPO));
+        Map<String, DeveloperProjectCollectionPO> idAndDeveloperProjectPO = developerProjectCollectionRepository.findAllByDeletedFalseAndGitIdIn(projectIds).stream().collect(Collectors.toMap(DeveloperProjectCollectionPO::getGitId, developerProjectCollectionPO -> developerProjectCollectionPO));
         DeveloperCollectionVO developerCollectionVO = new DeveloperCollectionVO();
         BeanUtils.copyProperties(developer, developerCollectionVO);
         List<DeveloperProjectCollectionVO> developerProjectCollectionVOS = new ArrayList<>();
