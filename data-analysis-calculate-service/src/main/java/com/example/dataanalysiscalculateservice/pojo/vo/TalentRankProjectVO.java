@@ -1,6 +1,6 @@
 package com.example.dataanalysiscalculateservice.pojo.vo;
 
-import com.example.dataanalysiscalculateservice.enums.ProjectClassificationEnum;
+import com.example.core.enums.ProjectClassificationEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -28,7 +28,7 @@ public class TalentRankProjectVO {
     private BigDecimal score;
 
     @ApiModelProperty(value = "项目分类", notes = "这是一个枚举类型，表示项目的分类，例如'开源'、'商业'等")
-    private String classification;
+    private ProjectClassificationEnum classification;
 
 
 }

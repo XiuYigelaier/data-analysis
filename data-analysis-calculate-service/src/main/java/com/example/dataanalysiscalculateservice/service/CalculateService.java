@@ -1,7 +1,7 @@
 package com.example.dataanalysiscalculateservice.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.example.dataanalysiscalculateservice.enums.ProjectClassificationEnum;
+import com.example.core.enums.ProjectClassificationEnum;
 import com.example.core.pojo.base.ResponseModel;
 import com.example.dataanalysiscalculateservice.repository.neo4j.DeveloperGraphRepository;
 import com.example.dataanalysiscalculateservice.config.BigModelNew;
@@ -332,7 +332,7 @@ public class CalculateService {
                             talentRankProjectPO -> {
                                 TalentRankProjectVO talentRankProjectVO = new TalentRankProjectVO();
                                 BeanUtils.copyProperties(talentRankProjectPO, talentRankProjectVO);
-                                talentRankProjectVO.setClassification(talentRankProjectPO.getClassification().getTerm());
+                                talentRankProjectVO.setClassification(talentRankProjectPO.getClassification());
                                 talentRankProjectVOS.add(talentRankProjectVO);
                             }
                     );
@@ -363,7 +363,7 @@ public class CalculateService {
                 talentRankProjectPO -> {
                     TalentRankProjectVO talentRankProjectVO = new TalentRankProjectVO();
                     BeanUtils.copyProperties(talentRankProjectPO, talentRankProjectVO);
-                    talentRankProjectVO.setClassification(talentRankProjectPO.getClassification().getTerm());
+                    talentRankProjectVO.setClassification(talentRankProjectPO.getClassification());
                     talentRankProjectVOS.add(talentRankProjectVO);
                 }
         );

@@ -1,4 +1,4 @@
-package com.example.dataanalysiscalculateservice.enums;
+package com.example.core.enums;
 
 public enum ProjectClassificationEnum {
     // 框架（例如React, Vue这种）
