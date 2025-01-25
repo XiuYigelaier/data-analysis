@@ -1,15 +1,19 @@
 package com.example.dataanalysiscalculateservice.controller;
 
+import com.example.core.enums.ProjectClassificationEnum;
 import com.example.core.pojo.base.ResponseModel;
 import com.example.dataanalysiscalculateservice.config.XFConfig;
+import com.example.dataanalysiscalculateservice.pojo.vo.ProjectClassificationVO;
 import com.example.dataanalysiscalculateservice.pojo.vo.TalentRankVO;
 import com.example.dataanalysiscalculateservice.service.CalculateService;
+import com.example.dataanalysiscalculateservice.service.StatisticsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/calculate")
@@ -19,6 +23,8 @@ public class calculateController {
     CalculateService calculateService;
     @Autowired
     XFConfig xfConfig;
+    @Autowired
+    StatisticsService statisticsService;
 
     private static final Logger log = LoggerFactory.getLogger(CalculateService.class);
 
@@ -60,6 +66,23 @@ public class calculateController {
             return ResponseModel.success(calculateService.findByLogin(login));
         } catch (Exception e) {
             return ResponseModel.failure("计算失败" +  e.getMessage());
+        }
+    }
+    @GetMapping("/projectClassificationList")
+    public  ResponseModel<List<ProjectClassificationVO>> projectClassificationList(){
+        try {
+            return ResponseModel.success(statisticsService.projectClassificationList());
+        } catch (Exception e) {
+            return ResponseModel.failure("获取20个不同分类项目" +  e.getMessage());
+        }
+    }
+
+    @GetMapping("/projectClassificationCount")
+    public  ResponseModel<Map<ProjectClassificationEnum,Long>> projectClassificationCount(){
+        try {
+            return ResponseModel.success(statisticsService.projectClassificationCount());
+        } catch (Exception e) {
+            return ResponseModel.failure("获取项目分类统计和失败" +  e.getMessage());
         }
     }
 

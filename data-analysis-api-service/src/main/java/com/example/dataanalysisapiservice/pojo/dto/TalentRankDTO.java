@@ -65,7 +65,7 @@ public class TalentRankDTO {
     private Integer  commentCount;
 
     @ApiModelProperty(value = "PR数")
-    private Integer PRCount;
+    private Integer prCount;
 
     public TalentRankDTO() {
         scoreHistory = new ArrayList<>();

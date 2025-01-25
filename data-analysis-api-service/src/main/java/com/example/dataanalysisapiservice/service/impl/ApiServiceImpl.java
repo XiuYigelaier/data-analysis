@@ -5,8 +5,7 @@ import com.example.core.pojo.base.ResponseModel;
 import com.example.core.utils.RedisUtil;
 import com.example.dataanalysisapiservice.feign.CalculateClientFeign;
 import com.example.dataanalysisapiservice.pojo.dto.TalentRankDTO;
-import com.example.dataanalysisapiservice.pojo.vo.TalentRankApiVO;
-import com.example.dataanalysisapiservice.pojo.vo.TalentRankProjectApiVO;
+import com.example.dataanalysisapiservice.pojo.vo.TalentRankApIVO;
 import com.example.dataanalysisapiservice.service.ApiService;
 import io.jsonwebtoken.lang.Collections;
 import org.springframework.beans.BeanUtils;
@@ -28,21 +27,21 @@ public class ApiServiceImpl implements ApiService {
 
 
     @Override
-    public List<TalentRankApiVO> findAll() {
-        List<TalentRankApiVO> talentRanks = redisUtil.getZSet("rank");
+    public List<TalentRankApIVO> findAll() {
+        List<TalentRankApIVO> talentRanks = redisUtil.getZSet("rank");
         if (!Collections.isEmpty(talentRanks)) {
             return talentRanks;
         }
         ResponseModel<List<TalentRankDTO>> responseModel = calculateClientFeign.findAll();
-        List<TalentRankApiVO> result = new ArrayList<>();
+        List<TalentRankApIVO> result = new ArrayList<>();
         responseModel.getData().forEach(
                 talentRankDTO -> {
-                    TalentRankApiVO talentRankApiVO = new TalentRankApiVO();
+                    TalentRankApIVO talentRankApiVO = new TalentRankApIVO();
                     BeanUtils.copyProperties(talentRankDTO, talentRankApiVO);
-                    List<TalentRankProjectApiVO> talentRankProjectApiVOS = new ArrayList<>();
+                    List<TalentRankApIVO.TalentRank_ProjectApiVO> talentRankProjectApiVOS = new ArrayList<>();
                     talentRankDTO.getProjectList().forEach(
                             projectDTO -> {
-                                TalentRankProjectApiVO talentRankProjectApiVO = new TalentRankProjectApiVO();
+                                TalentRankApIVO.TalentRank_ProjectApiVO talentRankProjectApiVO = talentRankApiVO.new TalentRank_ProjectApiVO();
                                 BeanUtils.copyProperties(projectDTO, talentRankProjectApiVO);
                                 talentRankProjectApiVOS.add(talentRankProjectApiVO);
                             }
@@ -56,8 +55,8 @@ public class ApiServiceImpl implements ApiService {
         );
 
         result.forEach(
-                talentRankApiVO -> {
-                    redisUtil.addZSet("rank", talentRankApiVO, talentRankApiVO.getTalentRank().doubleValue());
+                talentRankApIVO -> {
+                    redisUtil.addZSet("rank", talentRankApIVO, talentRankApIVO.getTalentRank().doubleValue());
                 }
         );
         return redisUtil.getZSet("rank");

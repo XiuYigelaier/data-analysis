@@ -12,7 +12,6 @@ import com.example.core.pojo.dto.DeveloperProjectCollectionTranDTO;
 import com.example.dataanalysiscalculateservice.pojo.po.mysql.ScoreHistoryPO;
 import com.example.dataanalysiscalculateservice.pojo.po.mysql.TalentRankPO;
 import com.example.dataanalysiscalculateservice.pojo.po.mysql.TalentRankProjectPO;
-import com.example.dataanalysiscalculateservice.pojo.vo.TalentRankProjectVO;
 import com.example.dataanalysiscalculateservice.pojo.vo.TalentRankVO;
 import com.example.dataanalysiscalculateservice.repository.mysql.ScoreHistoryRepository;
 import com.example.dataanalysiscalculateservice.repository.mysql.TalentRankProjectRepository;
@@ -327,10 +326,10 @@ public class CalculateService {
                     TalentRankVO talentRankVO = new TalentRankVO();
                     BeanUtils.copyProperties(talentRankPO, talentRankVO);
                     List<TalentRankProjectPO> talentRankProjectPOS = groupedByDeveloperId.getOrDefault(talentRankPO.getGitId(), new ArrayList<>());
-                    List<TalentRankProjectVO> talentRankProjectVOS = new ArrayList<>();
+                    List<TalentRankVO.TalentRankProjectVO> talentRankProjectVOS = new ArrayList<>();
                     talentRankProjectPOS.forEach(
                             talentRankProjectPO -> {
-                                TalentRankProjectVO talentRankProjectVO = new TalentRankProjectVO();
+                                TalentRankVO.TalentRankProjectVO talentRankProjectVO = talentRankVO.new TalentRankProjectVO();
                                 BeanUtils.copyProperties(talentRankProjectPO, talentRankProjectVO);
                                 talentRankProjectVO.setClassification(talentRankProjectPO.getClassification());
                                 talentRankProjectVOS.add(talentRankProjectVO);
@@ -358,10 +357,10 @@ public class CalculateService {
         TalentRankPO talentRankPO = talentRankRepository.findByLoginAndDeletedFalse(login).orElseThrow(() -> new RuntimeException("找不到对应login"));
         BeanUtils.copyProperties(talentRankPO, result);
         List<TalentRankProjectPO> talentRankProjectPOS = talentRankProjectRepository.findAllByDeveloperIdAndDeletedFalse(talentRankPO.getGitId());
-        List<TalentRankProjectVO> talentRankProjectVOS = new ArrayList<>();
+        List<TalentRankVO.TalentRankProjectVO> talentRankProjectVOS = new ArrayList<>();
         talentRankProjectPOS.forEach(
                 talentRankProjectPO -> {
-                    TalentRankProjectVO talentRankProjectVO = new TalentRankProjectVO();
+                    TalentRankVO.TalentRankProjectVO talentRankProjectVO = result.new TalentRankProjectVO();
                     BeanUtils.copyProperties(talentRankProjectPO, talentRankProjectVO);
                     talentRankProjectVO.setClassification(talentRankProjectPO.getClassification());
                     talentRankProjectVOS.add(talentRankProjectVO);
@@ -378,6 +377,7 @@ public class CalculateService {
         result.setProjectList(talentRankProjectVOS);
         return result;
     }
+
 
 
 }

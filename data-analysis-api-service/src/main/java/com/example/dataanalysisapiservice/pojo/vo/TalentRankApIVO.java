@@ -1,5 +1,6 @@
 package com.example.dataanalysisapiservice.pojo.vo;
 
+import com.example.core.enums.ProjectClassificationEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -8,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class TalentRankApiVO {
+public class TalentRankApIVO {
     @ApiModelProperty(value = "开发者名", example = "john_doe")
     private String name;
 
@@ -43,7 +44,7 @@ public class TalentRankApiVO {
     private List<BigDecimal> scoreHistory;
 
     @ApiModelProperty(value = "参与的项目列表", notes = "列表中的每个元素是TalentRankProjectVO类型，代表开发者参与的一个项目")
-    private List<TalentRankProjectApiVO> projectList;
+    private List<TalentRank_ProjectApiVO> projectList;
 
     @ApiModelProperty(value = "被关注的数量")
     private Integer  followersCount;
@@ -67,13 +68,46 @@ public class TalentRankApiVO {
     private Integer prCount;
 
 
-
-
-
-
-    public TalentRankApiVO() {
+    public TalentRankApIVO() {
         scoreHistory = new ArrayList<>();
         projectList = new ArrayList<>();
         talentRank = BigDecimal.ZERO;
     }
+
+
+    @Data
+    public class TalentRank_ProjectApiVO {
+
+        @ApiModelProperty(value = "开发者ID", example = "12345")
+        private String developerId;
+
+        @ApiModelProperty(value = "项目名称", example = "My Awesome Project")
+        private String projectName;
+
+        @ApiModelProperty(value = "项目URL（例如GitHub仓库链接）", example = "https://github.com/user/repo")
+        private String url;
+
+        @ApiModelProperty(value = "星标数量（表示项目的受欢迎程度）", example = "42")
+        private Integer starCount;
+
+        @ApiModelProperty(value = "项目描述", example = "这是一个非常棒的项目，用于解决...")
+        private String description;
+
+        @ApiModelProperty(value = "项目评分（数值越大表示评分越高）", example = "9.5")
+        private BigDecimal score;
+
+        @ApiModelProperty(value = "项目分类", notes = "这是一个枚举类型，表示项目的分类，例如'开源'、'商业'等")
+        private ProjectClassificationEnum classification;
+
+
+    }
+//
+//    @Data
+//    public class ScoreHistoryApiVO {
+//        @ApiModelProperty(value = "开发者gitID", example = "12345")
+//        String developerGitId;
+//        @ApiModelProperty(value = "开发者分数", example = "12345")
+//        BigDecimal score;
+//    }
+
 }

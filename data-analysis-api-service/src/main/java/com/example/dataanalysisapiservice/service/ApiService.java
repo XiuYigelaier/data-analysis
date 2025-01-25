@@ -1,13 +1,12 @@
 package com.example.dataanalysisapiservice.service;
 
-import com.example.dataanalysisapiservice.pojo.dto.TalentRankDTO;
-import com.example.dataanalysisapiservice.pojo.vo.TalentRankApiVO;
+import com.example.dataanalysisapiservice.pojo.vo.TalentRankApIVO;
 
 import java.util.List;
 
 public interface ApiService {
 
-     List<TalentRankApiVO> findAll();
+     List<TalentRankApIVO> findAll();
 
 
 }
