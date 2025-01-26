@@ -11,20 +11,17 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Data
-@Node("developer")
-public class DeveloperGraphVO{
+public class DeveloperGraphVO {
 
-    @Id
-    @Property
+
     private String developerId;
-    @Property
+
     private String avatarUrl;
-    @Property
+
     private String login;
-    @Property
+
     private BigDecimal score;
 
-    @Relationship(type = "FOLLOWS", direction = Relationship.Direction.OUTGOING)
     private List<DeveloperGraphVO> followee;
 
     public DeveloperGraphVO() {

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TalentRankProjectRepository extends JpaRepository<TalentRankProjectPO,String>, CrudRepository<TalentRankProjectPO,String> {
@@ -36,4 +37,6 @@ public interface TalentRankProjectRepository extends JpaRepository<TalentRankPro
             ") as ranked " +
             "WHERE ranked.rn <= 20  AND classification IS NOT NULL", nativeQuery = true)
     List<TalentRankProjectPO> findTop20ByClassificationAndStarCount();
+
+    Optional<TalentRankProjectPO> findByGitIdAndDeletedFalse(String gitId);
 }

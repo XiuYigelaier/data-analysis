@@ -20,6 +20,7 @@ public class TalentRankProjectPO extends BaseEntity {
     String description;
     Integer starCount;
     BigDecimal score;
+    String gitId;
     ProjectClassificationEnum classification;
 
     public TalentRankProjectPO() {

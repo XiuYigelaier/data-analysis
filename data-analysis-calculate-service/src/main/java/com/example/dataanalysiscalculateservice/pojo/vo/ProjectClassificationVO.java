@@ -15,13 +15,5 @@ public class ProjectClassificationVO {
         projects = new ArrayList<>();
     }
 
-    @Data
-    public class ProjectClassification_Project {
-        String projectName;
-        String url;
-        String description;
-        ProjectClassificationEnum classification;
 
-
-    }
 }

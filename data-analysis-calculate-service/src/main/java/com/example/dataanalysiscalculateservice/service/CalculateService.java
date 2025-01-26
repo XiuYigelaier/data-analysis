@@ -122,7 +122,9 @@ public class CalculateService {
             //添加项目语言
             languages.add(developerProject.getLanguage());
 
-            TalentRankProjectPO talentProjectPO = new TalentRankProjectPO();
+
+            TalentRankProjectPO talentProjectPO = talentRankProjectRepository.findByGitIdAndDeletedFalse(developerProject.getGitId()).orElseGet(TalentRankProjectPO::new);
+            talentProjectPO.setGitId(developerProject.getGitId());
             talentProjectPO.setDeveloperId(developerProject.getDeveloperId());
             talentProjectPO.setDescription(developerProject.getDescription());
             talentProjectPO.setUrl(developerProject.getUrl());

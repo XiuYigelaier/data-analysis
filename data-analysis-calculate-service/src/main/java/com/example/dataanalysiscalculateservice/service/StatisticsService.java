@@ -6,6 +6,7 @@ import com.example.dataanalysiscalculateservice.pojo.po.mysql.TalentRankProjectP
 import com.example.dataanalysiscalculateservice.pojo.po.neo4j.DeveloperGraphPO;
 import com.example.dataanalysiscalculateservice.pojo.vo.DeveloperGraphVO;
 import com.example.dataanalysiscalculateservice.pojo.vo.ProjectClassificationVO;
+import com.example.dataanalysiscalculateservice.pojo.vo.ProjectClassification_Project;
 import com.example.dataanalysiscalculateservice.repository.mysql.TalentRankProjectRepository;
 import com.example.dataanalysiscalculateservice.repository.neo4j.DeveloperGraphRepository;
 import org.springframework.beans.BeanUtils;
@@ -21,8 +22,7 @@ public class StatisticsService {
     TalentRankProjectRepository talentRankProjectRepository;
     @Autowired
     DeveloperGraphRepository developerGraphRepository;
-    @Autowired
-    DeveloperGraphMapper developerGraphMapper;
+
 
     public Map<ProjectClassificationEnum,Long> projectClassificationCount(){
         List<Object[]> results = talentRankProjectRepository.findProjectCountGroupedByClassification();
@@ -46,14 +46,16 @@ public class StatisticsService {
                 (k,v)->{
                     ProjectClassificationVO projectClassificationVO = new ProjectClassificationVO();
                     projectClassificationVO.setProjectClassification(k);
+                    List<ProjectClassification_Project>  projectClassificationProjects =  new ArrayList<>();
                     v.forEach(
                             talentRankProjectPO -> {
-                               ProjectClassificationVO.ProjectClassification_Project talentRankProjectVO =  projectClassificationVO.new ProjectClassification_Project();
+                               ProjectClassification_Project talentRankProjectVO =  new ProjectClassification_Project();
                                 BeanUtils.copyProperties(talentRankProjectPO, talentRankProjectVO);
-                               projectClassificationVO.setProjects(Collections.singletonList(talentRankProjectVO));
+                               projectClassificationProjects.add(talentRankProjectVO);
 
                             }
                     );
+                    projectClassificationVO.setProjects(projectClassificationProjects);
                     results.add(projectClassificationVO);
 
                 }
@@ -63,6 +65,7 @@ public class StatisticsService {
     }
 
     public DeveloperGraphVO findDeveloperGraph(String gitId){
+        DeveloperGraphMapper developerGraphMapper = DeveloperGraphMapper.INSTANCE;
         DeveloperGraphPO developerGraphPO = developerGraphRepository.findByDeveloperId(gitId);
         return developerGraphMapper.toVO(developerGraphPO);
     }
